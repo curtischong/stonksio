@@ -71,7 +71,7 @@ func main() {
 
 	// Connect to the stonksio database
 	connConfig, err := pgx.ParseConfig(stonksConfig.DatabaseConfig.ConnectionString)
-	//connConfig.Database = "stonksio"
+	connConfig.Database = "stonksio"
 	if err != nil {
 		log.Fatal("error configuring the database: ", err)
 	}
