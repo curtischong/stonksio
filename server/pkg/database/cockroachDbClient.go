@@ -48,7 +48,8 @@ func (client *CockroachDbClient) insertPost(
 	return crdbpgx.ExecuteTx(context.Background(), client.conn, pgx.TxOptions{}, func(tx pgx.Tx) error {
 		log.Printf("Creating post=%s\n", post)
 		_, err := tx.Exec(context.Background(),
-			"INSERT INTO post (id, message) VALUES ($1, $2, $3, $4)", post.Username, post.UserPicUrl, post.Body, post.Timestamp)
+			"INSERT INTO post (id, message) VALUES ($1, $2, $3, $4)",
+			post.Username, post.UserPicUrl, post.Body, post.Timestamp)
 		return err
 	})
 }
@@ -91,4 +92,19 @@ func (client *CockroachDbClient) GetOhlc(
 		prices = append(prices, ohlc)
 	}
 	return prices, nil
+}
+
+func (client *CockroachDbClient) InsertOhlc(
+	asset string, ohlc common.Ohlc,
+) error {
+	if asset != "ETH" {
+		return fmt.Errorf("invalid asset=%s", asset)
+	}
+	return crdbpgx.ExecuteTx(context.Background(), client.conn, pgx.TxOptions{}, func(tx pgx.Tx) error {
+		log.Printf("Creating ohlc=%s\n", ohlc)
+		_, err := tx.Exec(context.Background(),
+			"INSERT INTO ohlc (id, message) VALUES ($1, $2, $3, $4, $5, $6)",
+			ohlc.Open, ohlc.High, ohlc.Low, ohlc.Close, ohlc.StartTime, ohlc.EndTime)
+		return err
+	})
 }
