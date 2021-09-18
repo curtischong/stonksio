@@ -14,8 +14,28 @@ const Graph: React.FC = () => {
         domainPadding={{ x: 25 }}
         scale={{ x: "time" }}
       >
-        <VictoryAxis tickFormat={(t) => `${t.getDate()}/${t.getMonth()}`}/>
-        <VictoryAxis dependentAxis/>
+        <VictoryAxis 
+          tickFormat={(t) => `${t.getDate()}/${t.getMonth()}`}
+          style={{
+            axis: {
+              stroke: 'white'
+            },
+            tickLabels: {
+              fill: 'white'
+            }
+          }}
+        />
+        <VictoryAxis 
+          dependentAxis
+          style={{
+            axis: {
+              stroke: 'white'
+            },
+            tickLabels: {
+              fill: 'white'
+            }
+          }}
+        />
         <VictoryCandlestick
           animate={{
             duration: 2000,
@@ -29,6 +49,12 @@ const Graph: React.FC = () => {
             {x: new Date(2016, 6, 4), open: 20, close: 10, high: 25, low: 7},
             {x: new Date(2016, 6, 5), open: 10, close: 8, high: 15, low: 5}
           ]}
+          style={{
+            data: {
+              stroke: ((d: any) => (d.close > d.open ? "#e8093a" : "#009f3c")),
+              strokeWidth: 1
+            }
+          }}
         />
       </VictoryChart>
     </GraphContainer>
