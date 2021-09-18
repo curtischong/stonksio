@@ -1,8 +1,9 @@
 package config
 
 import (
-	"gopkg.in/yaml.v3"
 	"io/ioutil"
+
+	yaml "gopkg.in/yaml.v3"
 )
 
 type DatabaseConfig struct {
@@ -15,7 +16,7 @@ type Config struct {
 
 func NewConfig(
 	configPath string,
-) (*Config, error){
+) (*Config, error) {
 	var config Config
 	configFile, err := ioutil.ReadFile(configPath)
 	if err != nil {

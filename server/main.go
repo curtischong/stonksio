@@ -4,13 +4,16 @@ import (
 	"context"
 	"log"
 
-	"./pkg/config"
+	"stonksio/pkg/config"
+
 	"github.com/cockroachdb/cockroach-go/v2/crdb/crdbpgx"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v4"
+	yaml "gopkg.in/yaml.v3"
 )
 
 func insertRows(ctx context.Context, tx pgx.Tx, accts [4]uuid.UUID) error {
+	print(yaml.AliasNode)
 	// Insert four rows into the "post" table.
 	log.Println("Creating new rows...")
 	if _, err := tx.Exec(ctx,
@@ -58,7 +61,7 @@ func deleteAll(ctx context.Context, tx pgx.Tx) error {
 	return nil
 }
 
-const configPath = "./config.yml"
+const configPath = "./config.yaml"
 
 func main() {
 	stonksConfig, err := config.NewConfig(configPath)
@@ -68,7 +71,7 @@ func main() {
 
 	// Connect to the stonksio database
 	connConfig, err := pgx.ParseConfig(stonksConfig.DatabaseConfig.ConnectionString)
-	config.Database = "stonksio"
+	//connConfig.Database = "stonksio"
 	if err != nil {
 		log.Fatal("error configuring the database: ", err)
 	}
