@@ -10,8 +10,14 @@ type DatabaseConfig struct {
 	ConnectionString string `yaml:"connectionString"`
 }
 
+type DatasetConfig struct {
+	DatasetRoot string   `yaml:"datasetRoot"`
+	TweetFiles  []string `yaml:"tweetFiles"`
+}
+
 type Config struct {
 	DatabaseConfig DatabaseConfig `yaml:"database"`
+	DatasetConfig  DatasetConfig  `yaml:"dataset"`
 }
 
 func NewConfig(
