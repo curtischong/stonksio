@@ -23,11 +23,11 @@ func NewCockroachDbClient(
 ) *CockroachDbClient {
 	// Connect to the stonksio database
 	connConfig, err := pgx.ParseConfig(config.DatabaseConfig.ConnectionString)
-	connConfig.Database = "stonksio"
 	if err != nil {
 		log.Fatal("error configuring the database: ", err)
 	}
 
+	connConfig.Database = "stonksio"
 	conn, err := pgx.ConnectConfig(context.Background(), connConfig)
 	if err != nil {
 		log.Fatal("error connecting to the database: ", err)
