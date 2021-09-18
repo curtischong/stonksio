@@ -2,9 +2,10 @@ package main
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"stonksio/pkg/request"
+
+	log "github.com/sirupsen/logrus"
 
 	"stonksio/pkg/config"
 
@@ -32,4 +33,9 @@ func main() {
 
 	requestHandler := request.NewRequestHandler(config)
 	http.HandleFunc("/get/ohlc/eth", requestHandler.HandleGetOhlc)
+	log.Info("Starting server on port 8090")
+	err = http.ListenAndServe(":8090", nil)
+	if err != nil {
+		log.Fatalf("Cannot start server err=%s", err)
+	}
 }

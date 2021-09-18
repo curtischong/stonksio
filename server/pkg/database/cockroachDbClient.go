@@ -69,7 +69,7 @@ func (client *CockroachDbClient) GetOhlc(
 	}
 	rows, err := client.conn.Query(context.Background(), "SELECT open, high, low, close, startTime, endTime FROM ohlc")
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	prices := make([]common.Ohlc, 0)
 	defer rows.Close()
