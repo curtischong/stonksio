@@ -1,10 +1,11 @@
-import React from 'react';
-import styled from 'styled-components';
+import React from "react";
+import styled from "styled-components";
 
-import Graph from '../components/Graph';
-import Heading from '../components/Heading';
-import TweetInput from '../components/TweetInput';
-import Tweets from '../components/Tweets';
+import Graph from "../components/Graph";
+import Heading from "../components/Heading";
+import TweetInput from "../components/TweetInput";
+import Tweets from "../components/Tweets";
+import { initWebsockets } from "./websockets";
 
 const Sidebar = styled.div`
   width: 100%;
@@ -35,27 +36,22 @@ const Price = styled.div`
 `;
 
 const HomePage: React.FC = () => {
+  initWebsockets();
   return (
     <GridContainer>
       <Sidebar>
-        <Heading>
-          Activity
-        </Heading>
-        <TweetInput/>
-        <Line/>
-        <Tweets/>
+        <Heading>Activity</Heading>
+        <TweetInput />
+        <Line />
+        <Tweets />
       </Sidebar>
       <Content>
-        <Heading>
-          Ethereum
-        </Heading>
-        <Price>
-          US$1234.41
-        </Price>
-        <Graph/>
+        <Heading>Ethereum</Heading>
+        <Price>US$1234.41</Price>
+        <Graph />
       </Content>
     </GridContainer>
   );
-}
+};
 
 export default HomePage;

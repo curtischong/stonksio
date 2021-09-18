@@ -25,7 +25,9 @@ func NewPusherClient() *PusherClient {
 	}
 }
 
-func (client *PusherClient) pushPost(post common.Post) {
+func (client *PusherClient) PushPost(
+	post common.Post,
+) {
 	data := map[string]string{
 		"id":         post.Id,
 		"username":   post.Username,

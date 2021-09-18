@@ -9,7 +9,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/googleapis/gax-go/v2 v2.1.1 // indirect
 	github.com/jackc/pgx/v4 v4.13.0
-	github.com/pusher/pusher-http-go v4.0.1+incompatible // indirect
+	github.com/pusher/pusher-http-go v4.0.1+incompatible
 	github.com/sirupsen/logrus v1.4.2
 	golang.org/x/net v0.0.0-20210917221730-978cfadd31cf // indirect
 	golang.org/x/sys v0.0.0-20210917161153-d61c044b1678 // indirect

@@ -5,11 +5,13 @@ import (
 	"net/http"
 	"stonksio/pkg/config"
 	"stonksio/pkg/database"
+	"stonksio/pkg/websocket"
 )
 
 type RequestHandler struct {
 	config            *config.Config
 	cockroachDbClient *database.CockroachDbClient
+	PusherClient      *websocket.PusherClient
 }
 
 func NewRequestHandler(
@@ -18,6 +20,7 @@ func NewRequestHandler(
 	return &RequestHandler{
 		config:            config,
 		cockroachDbClient: database.NewCockroachDbClient(config),
+		PusherClient:      websocket.NewPusherClient(),
 	}
 }
 
