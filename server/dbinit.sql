@@ -11,7 +11,8 @@ CREATE TABLE post (
   id UUID PRIMARY KEY,
   username TEXT,
   userPicUrl TEXT,
-  body TEXT
+  body TEXT,
+  timestamp TIMESTAMP,
 );
 
 DROP TABLE IF EXISTS ohlc
@@ -22,4 +23,6 @@ CREATE TABLE ohlc(
   high DECIMAL,
   low DECIMAL,
   close DECIMAL,
+  startTime TIMESTAMP,
+  endTime TIMESTAMP,
 );

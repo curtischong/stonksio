@@ -2,9 +2,11 @@ package database
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"stonksio/pkg/common"
 	"stonksio/pkg/config"
+	"time"
 
 	"github.com/cockroachdb/cockroach-go/v2/crdb/crdbpgx"
 
@@ -46,15 +48,47 @@ func (client *CockroachDbClient) insertPost(
 	return crdbpgx.ExecuteTx(context.Background(), client.conn, pgx.TxOptions{}, func(tx pgx.Tx) error {
 		log.Printf("Creating post=%s\n", post)
 		_, err := tx.Exec(context.Background(),
-			"INSERT INTO post (id, message) VALUES ($1, $2, $3)", post.Username, post.UserPicUrl, post.Body)
+			"INSERT INTO post (id, message) VALUES ($1, $2, $3, $4)", post.Username, post.UserPicUrl, post.Body, post.Timestamp)
 		return err
 	})
 }
 
-func (client *CockroachDbClient) deleteallposts() error {
+func (client *CockroachDbClient) deleteAllPosts() error {
 	return crdbpgx.ExecuteTx(context.Background(), client.conn, pgx.TxOptions{}, func(tx pgx.Tx) error {
 		log.Printf("Deleting all posts")
 		_, err := tx.Exec(context.Background(), "DELETE FROM post")
 		return err
 	})
+}
+
+func (client *CockroachDbClient) GetOhlc(
+	asset string,
+) ([]common.Ohlc, error) {
+	if asset != "ETH" {
+		return nil, fmt.Errorf("invalid asset=%s", asset)
+	}
+	rows, err := client.conn.Query(context.Background(), "SELECT open, high, low, close, startTime, endTime FROM ohlc")
+	if err != nil {
+		log.Fatal(err)
+	}
+	prices := make([]common.Ohlc, 0)
+	defer rows.Close()
+	for rows.Next() {
+		ohlc := common.Ohlc{}
+		var startTime string
+		var endTime string
+		if err := rows.Scan(&ohlc.Open, &ohlc.High, &ohlc.Low, &ohlc.Close, &startTime, &endTime); err != nil {
+			return nil, err
+		}
+		ohlc.StartTime, err = time.Parse(time.RFC3339, startTime)
+		if err != nil {
+			return nil, fmt.Errorf("cannot parse ohlc.StartTime=%s, err=%s", startTime, err)
+		}
+		ohlc.EndTime, err = time.Parse(time.RFC3339, endTime)
+		if err != nil {
+			return nil, fmt.Errorf("cannot parse ohlc.EndTime=%s, err=%s", endTime, err)
+		}
+		prices = append(prices, ohlc)
+	}
+	return prices, nil
 }
