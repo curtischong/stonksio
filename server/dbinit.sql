@@ -6,7 +6,20 @@ CREATE DATABASE IF NOT EXISTS stonksio;
 
 USE stonksio;
 
+DROP TABLE IF EXISTS post
 CREATE TABLE post (
   id UUID PRIMARY KEY,
-  message TEXT
+  username TEXT,
+  userPicUrl TEXT,
+  body TEXT
+);
+
+DROP TABLE IF EXISTS ohlc
+CREATE TABLE ohlc(
+  id UUID PRIMARY KEY,
+  asset TEXT,
+  open DECIMAL,
+  high DECIMAL,
+  low DECIMAL,
+  close DECIMAL,
 );
