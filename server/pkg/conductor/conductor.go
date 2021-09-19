@@ -1,25 +1,27 @@
 package conductor
 
 import (
-	log "github.com/sirupsen/logrus"
 	"stonksio/pkg/common"
-	"stonksio/pkg/config"
 	"stonksio/pkg/database"
 	"stonksio/pkg/post"
+	"stonksio/pkg/websocket"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type Conductor struct {
+	cockroachDbClient *database.CockroachDbClient
 	postHandler       *post.PostHandler
+	pusherClient      *websocket.PusherClient
 	incomingPosts     <-chan *common.Post
 	incomingPrices    <-chan *common.Price
-	cockroachDbClient *database.CockroachDbClient
 	logger            *log.Logger
 }
 
 func NewConductor(
-	config *config.Config,
 	cockroachDbClient *database.CockroachDbClient,
 	postHandler *post.PostHandler,
+	pusherClient *websocket.PusherClient,
 	incomingPosts <-chan *common.Post,
 	incomingPrices <-chan *common.Price,
 ) *Conductor {
@@ -27,6 +29,7 @@ func NewConductor(
 		logger:            log.New(),
 		cockroachDbClient: cockroachDbClient,
 		postHandler:       postHandler,
+		pusherClient:      pusherClient,
 		incomingPosts:     incomingPosts,
 		incomingPrices:    incomingPrices,
 	}
@@ -49,10 +52,12 @@ func (c *Conductor) consumer() {
 		select {
 		case post := <-c.incomingPosts:
 			c.postHandler.HandlePost(post)
-
+			c.pusherClient.PushPost(post)
 		case price := <-c.incomingPrices:
 			if err := c.cockroachDbClient.InsertPrice("ETH", price.TradePrice); err != nil {
 				log.Errorf("cannot insert price err=%s", err)
+			} else {
+				c.pusherClient.PushPrice(price)
 			}
 		}
 	}

@@ -27,7 +27,7 @@ func NewPusherClient() *PusherClient {
 }
 
 func (client *PusherClient) PushPost(
-	post common.Post,
+	post *common.Post,
 ) {
 	data := map[string]string{
 		"id":         post.Id,
@@ -39,16 +39,13 @@ func (client *PusherClient) PushPost(
 	client.socketClient.Trigger("post", "new-post", data)
 }
 
-// TODO: call this function when updating prices
-func (client *PusherClient) PushPrices(
-	prices map[string]common.Price, // maps asset -> price
+func (client *PusherClient) PushPrice(
+	price *common.Price,
 ) {
-	data := make(map[string]map[string]string)
-	for asset, price := range prices {
-		data[asset] = map[string]string{
-			"tradePrice": fmt.Sprintf("%f", price.TradePrice),
-			"timestamp":  price.Timestamp.Format(time.RFC3339),
-		}
+	data := map[string]string{
+		"asset":      price.Asset,
+		"tradePrice": fmt.Sprintf("%f", price.TradePrice),
+		"timestamp":  price.Timestamp.Format(time.RFC3339),
 	}
-	client.socketClient.Trigger("prices", "new-prices", data)
+	client.socketClient.Trigger("prices", "new-price", data)
 }

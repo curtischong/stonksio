@@ -10,7 +10,7 @@ import (
 	"stonksio/pkg/post"
 	"stonksio/pkg/request"
 	"stonksio/pkg/sentiment"
-	"time"
+	"stonksio/pkg/websocket"
 
 	log "github.com/sirupsen/logrus"
 
@@ -27,6 +27,7 @@ func main() {
 
 	cockroachDbClient := database.NewCockroachDbClient(config)
 	gcpClient := sentiment.NewGcpClient()
+	pusherClient := websocket.NewPusherClient()
 
 	incomingPrices := make(chan *common.Price)
 	priceGenerator := price.NewPriceGenerator(cockroachDbClient, gcpClient, incomingPrices, "ETH")
@@ -36,11 +37,10 @@ func main() {
 	incomingPosts := make(chan *common.Post)
 	feedSrv := feed.NewFeed(config.Feed, incomingPosts)
 
-	conductorSrv := conductor.NewConductor(config, cockroachDbClient, postHandler, incomingPosts, incomingPrices)
+	conductorSrv := conductor.NewConductor(cockroachDbClient, postHandler, pusherClient, incomingPosts, incomingPrices)
 
 	requestHandler := request.NewRequestHandler(config, cockroachDbClient, postHandler)
 
-	sendTestPush(requestHandler)
 	http.HandleFunc("/api/post", requestHandler.HandlePostPost)
 	http.HandleFunc("/api/prices/eth", requestHandler.HandleGetPrices)
 
@@ -54,16 +54,4 @@ func main() {
 	if err != nil {
 		log.Fatalf("Cannot start server err=%s", err)
 	}
-}
-
-func sendTestPush(
-	requestHandler *request.RequestHandler,
-) {
-	requestHandler.PusherClient.PushPost(common.Post{
-		"asdfasd",
-		"splacorn",
-		"https://avatars.githubusercontent.com/u/10677873?v=4",
-		"I love Golang!",
-		time.Now(),
-	})
 }

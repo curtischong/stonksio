@@ -8,7 +8,6 @@ import (
 	"stonksio/pkg/config"
 	"stonksio/pkg/database"
 	"stonksio/pkg/post"
-	"stonksio/pkg/websocket"
 	"strconv"
 
 	"github.com/google/uuid"
@@ -20,7 +19,6 @@ type RequestHandler struct {
 	logger            *log.Logger
 	config            *config.Config
 	cockroachDbClient *database.CockroachDbClient
-	PusherClient      *websocket.PusherClient
 	postHandler       *post.PostHandler
 }
 
@@ -33,7 +31,6 @@ func NewRequestHandler(
 		logger:            log.New(),
 		config:            config,
 		cockroachDbClient: cockroachDbClient,
-		PusherClient:      websocket.NewPusherClient(),
 		postHandler:       postHandler,
 	}
 }
