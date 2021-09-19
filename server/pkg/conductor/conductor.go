@@ -3,6 +3,7 @@ package conductor
 import (
 	"stonksio/pkg/common"
 	"stonksio/pkg/database"
+	"stonksio/pkg/ohlc"
 	"stonksio/pkg/post"
 	"stonksio/pkg/websocket"
 
@@ -13,6 +14,7 @@ type Conductor struct {
 	cockroachDbClient *database.CockroachDbClient
 	postHandler       *post.PostHandler
 	pusherClient      *websocket.PusherClient
+	ohlcManager       *ohlc.OHLCManager
 	incomingPosts     <-chan *common.Post
 	incomingPrices    <-chan *common.Price
 	logger            *log.Logger
@@ -22,6 +24,7 @@ func NewConductor(
 	cockroachDbClient *database.CockroachDbClient,
 	postHandler *post.PostHandler,
 	pusherClient *websocket.PusherClient,
+	ohlcManager *ohlc.OHLCManager,
 	incomingPosts <-chan *common.Post,
 	incomingPrices <-chan *common.Price,
 ) *Conductor {
@@ -30,6 +33,7 @@ func NewConductor(
 		cockroachDbClient: cockroachDbClient,
 		postHandler:       postHandler,
 		pusherClient:      pusherClient,
+		ohlcManager:       ohlcManager,
 		incomingPosts:     incomingPosts,
 		incomingPrices:    incomingPrices,
 	}
@@ -57,6 +61,7 @@ func (c *Conductor) consumer() {
 				log.Errorf("cannot insert price err=%s", err)
 			} else {
 				c.pusherClient.PushPrice(price)
+				c.ohlcManager.HandlePrice(price)
 			}
 		}
 	}
