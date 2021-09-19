@@ -102,11 +102,7 @@ const HomePage: React.FC = () => {
         },
         mode: "no-cors",
         body: JSON.stringify(mapToTweetRequest(newTweet))
-      }).then(resp => {
-        setTweets((prevTweets: Tweet[]): any => {
-          return [newTweet, ...prevTweets];
-        });
-      }).catch(err => console.error(err));
+      }).then(resp => {}).catch(err => console.error(err));
   };
 
   const onClose = (newUsername: string) => {
