@@ -1,11 +1,8 @@
 package websocket
 
 import (
-	"fmt"
-	"stonksio/pkg/common"
-	"time"
-
 	pusher "github.com/pusher/pusher-http-go"
+	"stonksio/pkg/common"
 )
 
 // the file can't be called pusherClient to for syntax highlighting to work for some reason
@@ -29,23 +26,11 @@ func NewPusherClient() *PusherClient {
 func (client *PusherClient) PushPost(
 	post *common.Post,
 ) {
-	data := map[string]string{
-		"id":         post.Id,
-		"username":   post.Username,
-		"userPicUrl": post.UserPicUrl,
-		"body":       post.Body,
-		"timestamp":  post.Timestamp.Format(time.RFC3339),
-	}
-	client.socketClient.Trigger("post", "new-post", data)
+	client.socketClient.Trigger("post", "new-post", post)
 }
 
 func (client *PusherClient) PushPrice(
 	price *common.Price,
 ) {
-	data := map[string]string{
-		"asset":      price.Asset,
-		"tradePrice": fmt.Sprintf("%f", price.TradePrice),
-		"timestamp":  price.Timestamp.Format(time.RFC3339),
-	}
-	client.socketClient.Trigger("prices", "new-price", data)
+	client.socketClient.Trigger("prices", "new-price", price)
 }

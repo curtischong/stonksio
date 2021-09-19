@@ -1,3 +1,4 @@
+import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
@@ -7,7 +8,7 @@ import Modal from '../components/Modal';
 import TweetInput from '../components/TweetInput';
 import Tweets from '../components/Tweets';
 
-import { Tweet } from '../types';
+import { Tweet, TweetReponse } from '../types';
 
 import pusher from '../utils/pusher';
 
@@ -39,54 +40,46 @@ const Price = styled.div`
   color: #474b52;
 `;
 
-const mockData: any = [
-  {
-    name: "a",
-    msg: "An essential piece of #Ethereum’s Serenity upgrade, the Beacon Chain’s deposit contract, is live. This begins a transition to #Eth2.",
-    timestamp: "12:00"
-  },
-  {
-    name: "b",
-    msg: "More than 1000 hackers from around the world are staked and beginning to hack today at ETHOnline!",
-    timestamp: "12:00"
-  },
-  {
-    name: "c",
-    msg: "We're days away from #ETHOnline—the biggest Ethereum event of the year! It's a hackathon with multiple single-day conferences on NFTs, DAOs, and The Merge.",
-    timestamp: "12:00"
-  },
-  {
-    name: "d",
-    msg: "We're pleased to announce we've chosen SpruceID to lead the effort to standardize Sign-in with Ethereum!",
-    timestamp: "12:00"
-  }
-];
-
 const HomePage: React.FC = () => {
   const [tweets, setTweets] = useState([]);
   const [username, setUsername] = useState('');
 
+  const mapTweetResponse = (resp: TweetReponse): Tweet => {
+    const ts = new Date(resp.Timestamp)
+    return {
+      name: resp.Username,
+      msg: resp.Body,
+      timestamp: `${ts.getHours()}:${ts.getMinutes()}`,
+    }
+  }
+
   useEffect(() => {
     const getTweets = () => {
-      setTweets(mockData);
+      axios.get("https://stonk.st/api/posts", {
+        params: {
+          count: 20
+        }
+      }).then(resp => {
+        setTweets(resp.data.map(mapTweetResponse))
+      }).catch(err => console.error(err))
     };
 
-    const onTweetReceived = (tweet: Tweet) => {
+    const onTweetReceived = (resp: TweetReponse) => {
       setTweets((prevTweets: Tweet[]): any => {
-        return [...prevTweets, tweet];
+        return [...prevTweets, mapTweetResponse(resp)];
       });
     };
 
     const setupPusher = () => {
-      const channel = pusher().subscribe("tweets");
-      channel.bind('newTweet', onTweetReceived);
+      const channel = pusher().subscribe("post");
+      channel.bind('new-post', onTweetReceived);
     };
 
     getTweets();
     setupPusher();
 
     return (): void => {
-      pusher().unbind('newTweet', onTweetReceived);
+      pusher().unbind('new-post', onTweetReceived);
     };
   }, []);
 
@@ -107,15 +100,15 @@ const HomePage: React.FC = () => {
 
   return (
     <>
-      {username === '' && <Modal onClose={onClose}/>}
+      {username === '' && <Modal onClose={onClose} />}
       <GridContainer>
         <Sidebar>
           <Heading>
             Activity
           </Heading>
-          <TweetInput onSubmit={submitTweet}/>
-          <Line/>
-          <Tweets tweets={tweets}/>
+          <TweetInput onSubmit={submitTweet} />
+          <Line />
+          <Tweets tweets={tweets} />
         </Sidebar>
         <Content>
           <Heading>Ethereum</Heading>
