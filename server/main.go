@@ -33,14 +33,13 @@ func main() {
 	incomingPrices := make(chan *common.Price)
 	priceGenerator := price.NewPriceGenerator(cockroachDbClient, gcpClient, incomingPrices, "ETH")
 
-	postHandler := post.NewPostHandler(cockroachDbClient, priceGenerator, pusherClient)
+	ohlcManager := ohlc.NewOHLCManager(cockroachDbClient, pusherClient)
+	postHandler := post.NewPostHandler(cockroachDbClient, priceGenerator, pusherClient, ohlcManager)
 
 	incomingPosts := make(chan *common.Post)
 	feedSrv := feed.NewFeed(config.Feed, incomingPosts)
 
-	ohlcManager := ohlc.NewOHLCManager(cockroachDbClient, pusherClient)
-
-	conductorSrv := conductor.NewConductor(cockroachDbClient, postHandler, pusherClient, incomingPosts, incomingPrices)
+	conductorSrv := conductor.NewConductor(cockroachDbClient, postHandler, pusherClient, ohlcManager, incomingPosts, incomingPrices)
 
 	requestHandler := request.NewRequestHandler(config, cockroachDbClient, postHandler, ohlcManager)
 
