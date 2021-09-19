@@ -106,10 +106,11 @@ func (client *CockroachDbClient) GetLatestOhlc(
 	if err != nil {
 		return 0, err
 	}
-	if len(rows) != 1 {
-		return 0, fmt.Errorf("didn't receive one ohlc in GetLatestOhlc. received %d ohlc rows", len(rows))
-	}
 
+	for rows.Next() {
+		break
+	}
+	return 0, nil
 }
 
 func (client *CockroachDbClient) InsertOhlc(

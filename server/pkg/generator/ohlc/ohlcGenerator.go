@@ -37,7 +37,7 @@ func NewOhlcGenerator(
 func (generator *OhlcGenerator) writeNewPrice(
 	post common.Post,
 ) error {
-	sentiment, err := generator.gcpClient.CalculateSentiment(post.Body)
+	_, err := generator.gcpClient.CalculateSentiment(post.Body)
 	if err != nil {
 		return err
 	}
