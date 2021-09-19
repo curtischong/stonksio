@@ -94,6 +94,24 @@ func (client *CockroachDbClient) GetOhlc(
 	return prices, nil
 }
 
+func (client *CockroachDbClient) GetLatestOhlc(
+	asset string,
+) (float32, error) {
+	if asset != "ETH" {
+		return 0, fmt.Errorf("invalid asset=%s", asset)
+	}
+
+	rows, err := client.conn.Query(context.Background(),
+		"SELECT open, high, low, close, startTime, endTime FROM ohlc WHERE endTime = MAX(endTime)")
+	if err != nil {
+		return 0, err
+	}
+	if len(rows) != 1 {
+		return 0, fmt.Errorf("didn't receive one ohlc in GetLatestOhlc. received %d ohlc rows", len(rows))
+	}
+
+}
+
 func (client *CockroachDbClient) InsertOhlc(
 	asset string, ohlc common.Ohlc,
 ) error {

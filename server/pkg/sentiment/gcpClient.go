@@ -29,7 +29,7 @@ func (client *GcpClient) CloseClient() {
 
 func (client *GcpClient) CalculateSentiment(
 	text string,
-) (float32, error) {
+) (*languagepb.Sentiment, error) {
 	// Detects the sentiment of the text.
 	sentiment, err := client.languageClient.AnalyzeSentiment(context.Background(), &languagepb.AnalyzeSentimentRequest{
 		Document: &languagepb.Document{
@@ -41,7 +41,7 @@ func (client *GcpClient) CalculateSentiment(
 		EncodingType: languagepb.EncodingType_UTF8,
 	})
 	if err != nil {
-		return 0, fmt.Errorf("Failed to analyze text: %v", err)
+		return nil, fmt.Errorf("failed to analyze sentiment for text=%s, err=%s", text, err)
 	}
-	return sentiment.DocumentSentiment.Score, nil
+	return sentiment.DocumentSentiment, nil
 }
