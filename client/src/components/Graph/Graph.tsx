@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { VictoryCandlestick, VictoryChart, VictoryAxis } from 'victory';
+import { VictoryChart, VictoryLine, VictoryAxis, VictoryTooltip } from 'victory';
 
 const GraphContainer = styled.div`
   position: relative;
@@ -10,19 +10,16 @@ const GraphContainer = styled.div`
 const Graph: React.FC = () => {
   return (
     <GraphContainer>
-      <VictoryChart
-        domainPadding={{ x: 25 }}
-        scale={{ x: "time" }}
-      >
+      <VictoryChart>
         <VictoryAxis 
-          tickFormat={(t) => `${t.getDate()}/${t.getMonth()}`}
           style={{
             axis: {
               stroke: 'white'
             },
             tickLabels: {
               fill: 'white'
-            }
+            },
+            grid: { stroke: "#818e99", strokeWidth: 0.5 }
           }}
         />
         <VictoryAxis 
@@ -33,27 +30,43 @@ const Graph: React.FC = () => {
             },
             tickLabels: {
               fill: 'white'
-            }
+            },
+            grid: { stroke: "#818e99", strokeWidth: 0.5 }
           }}
         />
-        <VictoryCandlestick
+        <VictoryLine
+          labelComponent={
+            <VictoryTooltip
+                constrainToVisibleArea
+                cornerRadius={0}
+                flyoutStyle={{
+                  fill: "transparent",
+                  strokeWidth: 0
+                }}
+                pointerLength={0}
+                style={{
+                  fontSize: 16,
+                  fill: "#ffffff",
+                }}
+              />
+          }
+          style={{
+            data: { stroke: "#c43a31" }
+          }}
+          data={[
+            { x: 1, y: 2 },
+            { x: 2, y: 3 },
+            { x: 3, y: 5 },
+            { x: 4, y: 4 },
+            { x: 5, y: 60 },
+            { x: 6, y: 20 },
+            { x: 7, y: 30 },
+            { x: 8, y: 50 },
+            { x: 9, y: 40 },
+            { x: 10, y: 100 }
+          ]}
           animate={{
             duration: 2000,
-            onLoad: { duration: 1000 }
-          }}
-          candleColors={{ positive: "#009f3c", negative: "#e8093a" }}
-          data={[
-            {x: new Date(2016, 6, 1), open: 5, close: 10, high: 15, low: 0},
-            {x: new Date(2016, 6, 2), open: 10, close: 15, high: 20, low: 5},
-            {x: new Date(2016, 6, 3), open: 15, close: 20, high: 22, low: 10},
-            {x: new Date(2016, 6, 4), open: 20, close: 10, high: 25, low: 7},
-            {x: new Date(2016, 6, 5), open: 10, close: 8, high: 15, low: 5}
-          ]}
-          style={{
-            data: {
-              stroke: ((d: any) => (d.close > d.open ? "#e8093a" : "#009f3c")),
-              strokeWidth: 1
-            }
           }}
         />
       </VictoryChart>
