@@ -179,6 +179,28 @@ func (handler *RequestHandler) HandleBuy(
 	handler.cockroachDbClient.UpdateWallet(*ethWallet)
 }
 
+func (handler *RequestHandler) HandleGetOHLCs(
+	w http.ResponseWriter, r *http.Request,
+) {
+	count, err := getCount(r, defaultPostsCount)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"status":  "error",
+			"message": "could not parse count",
+		})
+		return
+	}
+
+	ohlcs, err := handler.cockroachDbClient.GetOHLCs(count)
+	if err != nil {
+		handler.sendInternalServerError(w, err)
+		return
+	}
+	handler.sendStatusOK(w)
+	json.NewEncoder(w).Encode(ohlcs)
+}
+
 func (handler *RequestHandler) HandlePostPost(
 	w http.ResponseWriter, r *http.Request,
 ) {

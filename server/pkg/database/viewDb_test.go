@@ -29,6 +29,12 @@ func TestViewDb(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
+	t.Run("viewOHLCs", func(t *testing.T) {
+		ohlcs, err := dbClient.GetOHLCs(5)
+		fmt.Println(ohlcs)
+		assert.NoError(t, err)
+	})
+
 	t.Run("viewBalance", func(t *testing.T) {
 		prices, err := dbClient.GetWallet("ETH", "splacorn")
 		fmt.Println(prices)
