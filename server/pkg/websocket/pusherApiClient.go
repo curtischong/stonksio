@@ -1,6 +1,7 @@
 package websocket
 
 import (
+	"fmt"
 	"stonksio/pkg/common"
 	"time"
 
@@ -36,4 +37,18 @@ func (client *PusherClient) PushPost(
 		"timestamp":  post.Timestamp.Format(time.RFC3339),
 	}
 	client.socketClient.Trigger("post", "new-post", data)
+}
+
+// TODO: call this function when updating prices
+func (client *PusherClient) PushPrices(
+	prices map[string]common.Price, // maps asset -> price
+) {
+	data := make(map[string]map[string]string)
+	for asset, price := range prices {
+		data[asset] = map[string]string{
+			"tradePrice": fmt.Sprintf("%f", price.TradePrice),
+			"timestamp":  price.Timestamp.Format(time.RFC3339),
+		}
+	}
+	client.socketClient.Trigger("prices", "new-prices", data)
 }
