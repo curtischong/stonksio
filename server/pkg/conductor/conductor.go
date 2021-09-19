@@ -53,15 +53,22 @@ func (c *Conductor) Start() {
 		select {
 		case post := <-c.incomingPosts:
 			fmt.Println(post)
+			// TODO: write post to db
 			tradePrice, err := c.priceGenerator.GetNewPriceFromPostSentiment(post.Body)
+			if err != nil {
+				log.Errorf("cannot get price from post sentiment err=%s", err)
+				continue
+			}
 			if err := c.cockroachDbClient.InsertPrice("ETH", tradePrice); err != nil {
 				log.Errorf("cannot insert price err=%s", err)
+				continue
 			}
 
 		case price := <-c.incomingPrices:
 			fmt.Println(price)
 			if err := c.cockroachDbClient.InsertPrice("ETH", price.TradePrice); err != nil {
 				log.Errorf("cannot insert price err=%s", err)
+				continue
 			}
 		}
 
