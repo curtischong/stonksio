@@ -30,7 +30,7 @@ func TestViewDb(t *testing.T) {
 	})
 
 	t.Run("viewBalance", func(t *testing.T) {
-		prices, err := dbClient.GetBalance("splacorn")
+		prices, err := dbClient.GetBalance("ETH", "splacorn")
 		fmt.Println(prices)
 		assert.NoError(t, err)
 	})
@@ -64,6 +64,7 @@ func TestInsertDb(t *testing.T) {
 		err := dbClient.InsertWallet(common.Wallet{
 			Username: "splacorn",
 			Balance:  100000,
+			Asset:    "ETH",
 		})
 		assert.NoError(t, err)
 	})

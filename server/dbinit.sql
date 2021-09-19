@@ -27,5 +27,15 @@ DROP TABLE IF EXISTS wallet;
 CREATE TABLE wallet(
    id UUID PRIMARY KEY,
    username TEXT,
+   asset TEXT,
    balance DECIMAL
+);
+
+DROP TABLE IF EXISTS position;
+CREATE TABLE position(
+    id UUID PRIMARY KEY,
+    username TEXT,
+    size DECIMAL,
+    price DECIMAL,
+    timestamp TIMESTAMP
 );

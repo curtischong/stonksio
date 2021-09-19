@@ -2,6 +2,7 @@ package request
 
 import (
 	"encoding/json"
+	"fmt"
 	io "io/ioutil"
 	"net/http"
 	"stonksio/pkg/common"
@@ -61,6 +62,65 @@ func (handler *RequestHandler) HandleGetPrices(
 	}
 	handler.sendStatusOK(w)
 	json.NewEncoder(w).Encode(prices)
+}
+
+func (handler *RequestHandler) HandleGetWallet(
+	w http.ResponseWriter, r *http.Request,
+) {
+	username := r.URL.Query().Get("username")
+	if username == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"status":  "error",
+			"message": "please send a username",
+		})
+		return
+	}
+
+	balance, err := handler.cockroachDbClient.GetBalance("ETH", username)
+	if err != nil {
+		handler.sendInternalServerError(w, err)
+		return
+	}
+	if balance == -1 {
+		// create balance for user
+		err := handler.cockroachDbClient.InsertWallet(common.Wallet{
+			Username: username,
+			Asset:    "USD",
+			Balance:  10000,
+		})
+		if err != nil {
+			handler.sendInternalServerError(w, err)
+			return
+		}
+		err = handler.cockroachDbClient.InsertWallet(common.Wallet{
+			Username: username,
+			Asset:    "ETH",
+			Balance:  50,
+		})
+		if err != nil {
+			handler.sendInternalServerError(w, err)
+			return
+		}
+	}
+
+	handler.sendStatusOK(w)
+
+	ethBalance, err := handler.cockroachDbClient.GetBalance("ETH", username)
+	if err != nil {
+		handler.sendInternalServerError(w, err)
+		return
+	}
+	usdBalance, err := handler.cockroachDbClient.GetBalance("ETH", username)
+	if err != nil {
+		handler.sendInternalServerError(w, err)
+		return
+	}
+	walletData := make(map[string]string)
+	walletData["ETH"] = fmt.Sprintf("%f", ethBalance)
+	walletData["USD"] = fmt.Sprintf("%f", usdBalance)
+	fileUrlsBytes, _ := json.Marshal(walletData)
+	w.Write(fileUrlsBytes)
 }
 
 func (handler *RequestHandler) HandlePostPost(

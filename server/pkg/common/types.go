@@ -29,5 +29,6 @@ type Ohlc struct {
 type Wallet struct {
 	Id       string
 	Username string
+	Asset    string
 	Balance  float32
 }
