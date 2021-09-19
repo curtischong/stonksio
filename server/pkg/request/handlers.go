@@ -55,14 +55,14 @@ func (handler *RequestHandler) HandlePostPost(
 	if err != nil {
 		handler.logger.Errorf("error reading the body err=%s", err)
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(`{"status": "error", "message": "internal server error"}`))
+		json.NewEncoder(w).Encode(`{"status": "error", "message": "internal server error"}`)
 		return
 	}
 
 	var newPost common.Post
 	if err := json.Unmarshal(body, &newPost); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`{"status": "error", "message": "could not parse json"}`))
+		json.NewEncoder(w).Encode(`{"status": "error", "message": "could not parse json"}`)
 		return
 	}
 
@@ -71,9 +71,10 @@ func (handler *RequestHandler) HandlePostPost(
 
 	if err := handler.postHandler.HandlePost(&newPost); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(`{"status": "error", "message": "internal server error"}`))
+		json.NewEncoder(w).Encode(`{"status": "error", "message": "internal server error"}`)
 		return
 	}
 
-	w.Write([]byte(`{"status": "success"}`))
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(`{"status": "success"}`)
 }
