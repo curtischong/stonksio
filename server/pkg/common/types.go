@@ -3,11 +3,11 @@ package common
 import "time"
 
 type Post struct {
-	Id         string
-	Username   string
-	UserPicUrl string
-	Body       string
-	Timestamp  time.Time
+	Id         string    `json:"id"`
+	Username   string    `json:"username"`
+	UserPicUrl string    `json:"userpicurl"`
+	Body       string    `json:"body"`
+	Timestamp  time.Time `json:"timestamp"`
 }
 
 type Price struct {
