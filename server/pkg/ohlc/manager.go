@@ -86,7 +86,7 @@ func (m *OHLCManager) GetOHLCs() []common.OHLC {
 	ohlcs := make([]common.OHLC, 0, m.ohlcs.Len())
 
 	// oldest first
-	for e := m.ohlcs.Back(); e != m.ohlcs.Front(); e.Prev() {
+	for e := m.ohlcs.Back(); e != m.ohlcs.Front(); e = e.Prev() {
 		ohlcs = append(ohlcs, *e.Value.(*common.OHLC))
 	}
 
