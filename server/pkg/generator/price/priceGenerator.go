@@ -68,25 +68,22 @@ func (g *PriceGenerator) generatePrices() {
 		delay := time.Duration(rand.Intn(g.averageTime)) * time.Second
 		time.Sleep(delay)
 
-		tradePrice := g.getNewRandomTradePrice()
-		g.out <- &common.Price{
-			Asset:      g.asset,
-			TradePrice: tradePrice,
-			Timestamp:  time.Now(),
-		}
+		g.out <- g.getNewRandomPrice()
 	}
 }
 
-func (g *PriceGenerator) getNewRandomTradePrice() float32 {
-	return g.getNewPrice() + float32(rand.NormFloat64()*stdDevForRandPrice)
+func (g *PriceGenerator) getNewRandomPrice() *common.Price {
+	price := g.getNewPrice()
+	price.TradePrice += float32(rand.NormFloat64() * stdDevForRandPrice)
+	return price
 }
 
 func (g *PriceGenerator) GetNewPriceFromPostSentiment(
 	postBody string,
-) (float32, error) {
+) (*common.Price, error) {
 	sentiment, err := g.gcpClient.CalculateSentiment(postBody)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 	g.globalSentiment += float32(sentiment.Score * 0.1)
 	// since magnitude is from [0, inf) I'm using a sqrt so it doesn't explode
@@ -95,6 +92,10 @@ func (g *PriceGenerator) GetNewPriceFromPostSentiment(
 	return g.getNewPrice(), nil
 }
 
-func (g *PriceGenerator) getNewPrice() float32 {
-	return g.lastPrice + g.globalSentiment*0.1 + g.minuteSentiment*0.1
+func (g *PriceGenerator) getNewPrice() *common.Price {
+	return &common.Price{
+		Asset:      g.asset,
+		TradePrice: g.lastPrice + g.globalSentiment*0.1 + g.minuteSentiment*0.1,
+		Timestamp:  time.Now(),
+	}
 }

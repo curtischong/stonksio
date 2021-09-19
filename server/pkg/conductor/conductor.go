@@ -52,9 +52,8 @@ func (c *Conductor) consumer() {
 		select {
 		case post := <-c.incomingPosts:
 			c.postHandler.HandlePost(post)
-			c.pusherClient.PushPost(post)
 		case price := <-c.incomingPrices:
-			if err := c.cockroachDbClient.InsertPrice("ETH", price.TradePrice); err != nil {
+			if err := c.cockroachDbClient.InsertPrice(*price); err != nil {
 				log.Errorf("cannot insert price err=%s", err)
 			} else {
 				c.pusherClient.PushPrice(price)

@@ -47,7 +47,11 @@ func TestInsertDb(t *testing.T) {
 	})
 
 	t.Run("insertPrice", func(t *testing.T) {
-		err := dbClient.InsertPrice("ETH", 2311.3)
+		err := dbClient.InsertPrice(common.Price{
+			Asset:      "ETH",
+			TradePrice: 2311.3,
+			Timestamp:  time.Now(),
+		})
 		assert.NoError(t, err)
 	})
 }

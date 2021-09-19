@@ -32,7 +32,7 @@ func main() {
 	incomingPrices := make(chan *common.Price)
 	priceGenerator := price.NewPriceGenerator(cockroachDbClient, gcpClient, incomingPrices, "ETH")
 
-	postHandler := post.NewPostHandler(cockroachDbClient, priceGenerator)
+	postHandler := post.NewPostHandler(cockroachDbClient, priceGenerator, pusherClient)
 
 	incomingPosts := make(chan *common.Post)
 	feedSrv := feed.NewFeed(config.Feed, incomingPosts)

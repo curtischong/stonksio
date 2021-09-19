@@ -3,12 +3,10 @@ package database
 import (
 	"context"
 	"fmt"
+	"github.com/jackc/pgx/v4"
 	"log"
 	"stonksio/pkg/common"
 	"stonksio/pkg/config"
-	"time"
-
-	"github.com/jackc/pgx/v4"
 
 	"github.com/google/uuid"
 
@@ -137,17 +135,15 @@ func (client *CockroachDbClient) GetLatestPrice(
 	return 0, nil
 }
 
-func (client *CockroachDbClient) InsertPrice(
-	asset string, tradePrice float32,
-) error {
-	if asset != "ETH" {
-		return fmt.Errorf("invalid asset=%s", asset)
+func (client *CockroachDbClient) InsertPrice(price common.Price) error {
+	if price.Asset != "ETH" {
+		return fmt.Errorf("invalid asset=%s", price.Asset)
 	}
 	return crdbpgx.ExecuteTx(context.Background(), client.db, pgx.TxOptions{}, func(tx pgx.Tx) error {
 		//log.Printf("Creating tradePrice=%f for asset=%s\n", tradePrice, asset)
 		_, err := tx.Exec(context.Background(),
 			"INSERT INTO price (id, asset, tradePrice, timestamp) VALUES ($1, $2, $3, $4)",
-			uuid.New().String(), asset, tradePrice, time.Now())
+			uuid.New().String(), price.Asset, price.TradePrice, price.Timestamp)
 		return err
 	})
 }
