@@ -27,7 +27,19 @@ func NewRequestHandler(
 func (handler *RequestHandler) HandleGetPrices(
 	w http.ResponseWriter, r *http.Request,
 ) {
+	prices, err := handler.cockroachDbClient.GetPrices("ETH")
+	if err != nil {
+		handler.sendInternalServerError(w, err)
+	}
 	handler.sendStatusOK(w)
+	fileUrlsBytes, _ := json.Marshal(prices)
+	w.Write(fileUrlsBytes)
+}
+
+func (handler *RequestHandler) HandlePostPost(
+	w http.ResponseWriter, r *http.Request,
+) {
+
 	prices, err := handler.cockroachDbClient.GetPrices("ETH")
 	if err != nil {
 		handler.sendInternalServerError(w, err)

@@ -111,7 +111,7 @@ func (client *CockroachDbClient) GetPrices(
 	return prices, nil
 }
 
-func (client *CockroachDbClient) GetLatestOhlc(
+func (client *CockroachDbClient) GetLatestPrice(
 	asset string,
 ) (float32, error) {
 	if asset != "ETH" {

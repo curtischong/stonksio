@@ -1,5 +1,6 @@
 package post
 
+// THIS FILE ISN'T USED FOR NOW
 import (
 	"encoding/json"
 	"io/ioutil"
