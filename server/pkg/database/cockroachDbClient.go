@@ -62,34 +62,29 @@ func (client *CockroachDbClient) deleteAllPosts() error {
 	})
 }
 
-func (client *CockroachDbClient) GetOhlc(
+func (client *CockroachDbClient) GetPrices(
 	asset string,
-) ([]common.Ohlc, error) {
+) ([]common.Price, error) {
 	if asset != "ETH" {
 		return nil, fmt.Errorf("invalid asset=%s", asset)
 	}
-	rows, err := client.conn.Query(context.Background(), "SELECT open, high, low, close, startTime, endTime FROM ohlc")
+	rows, err := client.conn.Query(context.Background(), "SELECT price, time FROM price WHERE asset=$1", asset)
 	if err != nil {
 		return nil, err
 	}
-	prices := make([]common.Ohlc, 0)
+	prices := make([]common.Price, 0)
 	defer rows.Close()
 	for rows.Next() {
-		ohlc := common.Ohlc{}
-		var startTime string
-		var endTime string
-		if err := rows.Scan(&ohlc.Open, &ohlc.High, &ohlc.Low, &ohlc.Close, &startTime, &endTime); err != nil {
+		price := common.Price{}
+		var timestamp string
+		if err := rows.Scan(&price.Price); err != nil {
 			return nil, err
 		}
-		ohlc.StartTime, err = time.Parse(time.RFC3339, startTime)
+		price.Timestamp, err = time.Parse(time.RFC3339, timestamp)
 		if err != nil {
-			return nil, fmt.Errorf("cannot parse ohlc.StartTime=%s, err=%s", startTime, err)
+			return nil, fmt.Errorf("cannot parse price.Timestamp=%s, err=%s", timestamp, err)
 		}
-		ohlc.EndTime, err = time.Parse(time.RFC3339, endTime)
-		if err != nil {
-			return nil, fmt.Errorf("cannot parse ohlc.EndTime=%s, err=%s", endTime, err)
-		}
-		prices = append(prices, ohlc)
+		prices = append(prices, price)
 	}
 	return prices, nil
 }
@@ -113,17 +108,17 @@ func (client *CockroachDbClient) GetLatestOhlc(
 	return 0, nil
 }
 
-func (client *CockroachDbClient) InsertOhlc(
-	asset string, ohlc common.Ohlc,
+func (client *CockroachDbClient) insertPrice(
+	asset string, price common.Price,
 ) error {
 	if asset != "ETH" {
 		return fmt.Errorf("invalid asset=%s", asset)
 	}
 	return crdbpgx.ExecuteTx(context.Background(), client.conn, pgx.TxOptions{}, func(tx pgx.Tx) error {
-		log.Printf("Creating ohlc=%s\n", ohlc)
+		log.Printf("Creating price=%s for asset=%s\n", price, asset)
 		_, err := tx.Exec(context.Background(),
-			"INSERT INTO ohlc (id, message) VALUES ($1, $2, $3, $4, $5, $6)",
-			ohlc.Open, ohlc.High, ohlc.Low, ohlc.Close, ohlc.StartTime, ohlc.EndTime)
+			"INSERT INTO price (asset, price, timestamp) VALUES ($1, $2, $3)",
+			asset, price.Price, price.Timestamp)
 		return err
 	})
 }

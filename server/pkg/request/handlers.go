@@ -24,15 +24,15 @@ func NewRequestHandler(
 	}
 }
 
-func (handler *RequestHandler) HandleGetOhlc(
+func (handler *RequestHandler) HandleGetPrices(
 	w http.ResponseWriter, r *http.Request,
 ) {
 	handler.sendStatusOK(w)
-	ohlc, err := handler.cockroachDbClient.GetOhlc("ETH")
+	prices, err := handler.cockroachDbClient.GetPrices("ETH")
 	if err != nil {
 		handler.sendInternalServerError(w, err)
 	}
 	handler.sendStatusOK(w)
-	fileUrlsBytes, _ := json.Marshal(ohlc)
+	fileUrlsBytes, _ := json.Marshal(prices)
 	w.Write(fileUrlsBytes)
 }

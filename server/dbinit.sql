@@ -15,14 +15,10 @@ CREATE TABLE post (
   timestamp TIMESTAMP,
 );
 
-DROP TABLE IF EXISTS ohlc
-CREATE TABLE ohlc(
+DROP TABLE IF EXISTS price
+CREATE TABLE price(
   id UUID PRIMARY KEY,
   asset TEXT,
-  open DECIMAL,
-  high DECIMAL,
-  low DECIMAL,
-  close DECIMAL,
-  startTime TIMESTAMP,
-  endTime TIMESTAMP,
+  price DECIMAL,
+  timestamp TIMESTAMP,
 );

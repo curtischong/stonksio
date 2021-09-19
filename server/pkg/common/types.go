@@ -10,6 +10,13 @@ type Post struct {
 	Timestamp  time.Time
 }
 
+type Price struct {
+	Id        string
+	Asset     string
+	Price     float32
+	Timestamp time.Time
+}
+
 type Ohlc struct {
 	Id        string
 	Open      string
