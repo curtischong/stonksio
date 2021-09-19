@@ -2,14 +2,15 @@ package request
 
 import (
 	"encoding/json"
-	"github.com/google/uuid"
-	"io"
+	io "io/ioutil"
 	"net/http"
 	"stonksio/pkg/common"
 	"stonksio/pkg/config"
 	"stonksio/pkg/database"
 	"stonksio/pkg/post"
 	"stonksio/pkg/websocket"
+
+	"github.com/google/uuid"
 
 	log "github.com/sirupsen/logrus"
 )
