@@ -13,6 +13,7 @@ require (
 	github.com/n0madic/twitter-scraper v0.0.0-20210913143630-43a6fa96a592
 	github.com/pusher/pusher-http-go v4.0.1+incompatible
 	github.com/sirupsen/logrus v1.8.1
+	github.com/stretchr/testify v1.7.0
 	golang.org/x/crypto v0.0.0-20210915214749-c084706c2272 // indirect
 	golang.org/x/net v0.0.0-20210917221730-978cfadd31cf // indirect
 	golang.org/x/sys v0.0.0-20210917161153-d61c044b1678 // indirect

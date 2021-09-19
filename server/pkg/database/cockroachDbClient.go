@@ -63,9 +63,9 @@ func (client *CockroachDbClient) deleteAllPosts() error {
 }
 
 func (client *CockroachDbClient) getPosts(n int) ([]common.Post, error) {
-	rows, err := client.conn.Query(context.Background(), "SELECT id, username, userPicUrl, body, timestamp FROM post ORDER DESC LIMIT $1", n)
+	rows, err := client.conn.Query(context.Background(), `SELECT 'id', 'username', 'userpicurl', 'body', 'timestamp' FROM post LIMIT $1;`, n)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("cannot query rows. err=%s", err)
 	}
 	posts := make([]common.Post, 0, n)
 	defer rows.Close()
@@ -73,7 +73,7 @@ func (client *CockroachDbClient) getPosts(n int) ([]common.Post, error) {
 		post := common.Post{}
 		var timestamp string
 		if err := rows.Scan(&post.Id, &post.Username, &post.UserPicUrl, &post.Body, &timestamp); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("cannot scan rows. err=%s", err)
 		}
 		post.Timestamp, err = time.Parse(time.RFC3339, timestamp)
 		if err != nil {
@@ -137,7 +137,7 @@ func (client *CockroachDbClient) InsertPrice(
 		return fmt.Errorf("invalid asset=%s", asset)
 	}
 	return crdbpgx.ExecuteTx(context.Background(), client.conn, pgx.TxOptions{}, func(tx pgx.Tx) error {
-		log.Printf("Creating tradePrice=%s for asset=%s\n", tradePrice, asset)
+		log.Printf("Creating tradePrice=%f for asset=%s\n", tradePrice, asset)
 		_, err := tx.Exec(context.Background(),
 			"INSERT INTO tradePrice (asset, tradePrice, timestamp) VALUES ($1, $2, $3)",
 			asset, tradePrice, time.Now())
