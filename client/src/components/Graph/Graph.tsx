@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { VictoryChart, VictoryLine, VictoryAxis, VictoryTooltip } from 'victory';
+import { VictoryChart, VictoryLine, VictoryAxis, VictoryTooltip, VictoryArea } from 'victory';
 import { Price, ServerPrice } from '../../types';
 
 import pusher from '../../utils/pusher';
@@ -16,10 +16,19 @@ const PriceText = styled.div`
   color: #474b52;
 `;
 
+
+let max = 0;
+let min = 10000000000;
+
 const mapFromPriceResponse = (resp: ServerPrice): Price => {
+  const newPrice: number = parseFloat(resp.TradePrice);
+
+  max = Math.max(max, newPrice);
+  min = Math.min(min, newPrice);
+
   return {
     x: new Date(resp.Timestamp),
-    y: parseFloat(resp.TradePrice)
+    y: newPrice
   };
 }
 
@@ -59,10 +68,24 @@ const Graph: React.FC = () => {
 
   return (
     <>
+      <svg style={{ height: 0 }}>
+        <defs>
+          <linearGradient id="gradient" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="#ff6961"/>
+            <stop offset="100%" stopColor="#1a1b20"/>
+          </linearGradient>
+        </defs>
+      </svg>
       <PriceText>US${currentPrice}</PriceText>
       <GraphContainer>
         <VictoryChart
           scale={{ x: "time" }}
+          maxDomain={{ 
+            y: max + max/1000
+          }}
+          minDomain={{ 
+            y: min - min/1000
+          }}
         >
           <VictoryAxis 
             style={{
@@ -89,13 +112,21 @@ const Graph: React.FC = () => {
               },
             }}
           />
-          <VictoryLine
+          <VictoryArea
             style={{
-              data: { stroke: "#c43a31" }
+              data: { 
+                stroke: "#ff6961",
+                strokeWidth: 0.5,
+                fill: "url(#gradient)",
+                fillOpacity: 0.5
+              }
             }}
             data={prices}
             animate={{
-              duration: 2000,
+              duration: 1000,
+              onLoad: { 
+                duration: 1000 
+              }
             }}
           />
         </VictoryChart>
