@@ -2,14 +2,19 @@ package request
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
+	"stonksio/pkg/common"
 	"stonksio/pkg/config"
 	"stonksio/pkg/database"
 	"stonksio/pkg/post"
 	"stonksio/pkg/websocket"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type RequestHandler struct {
+	logger            *log.Logger
 	config            *config.Config
 	cockroachDbClient *database.CockroachDbClient
 	PusherClient      *websocket.PusherClient
@@ -22,6 +27,7 @@ func NewRequestHandler(
 	postHandler *post.PostHandler,
 ) *RequestHandler {
 	return &RequestHandler{
+		logger:            log.New(),
 		config:            config,
 		cockroachDbClient: cockroachDbClient,
 		PusherClient:      websocket.NewPusherClient(),
@@ -44,12 +50,26 @@ func (handler *RequestHandler) HandleGetPrices(
 func (handler *RequestHandler) HandlePostPost(
 	w http.ResponseWriter, r *http.Request,
 ) {
-
-	prices, err := handler.cockroachDbClient.GetPrices("ETH")
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		handler.sendInternalServerError(w, err)
+		handler.logger.Errorf("error reading the body err=%s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(`{"status": "error", "message": "internal server error"}`))
+		return
 	}
-	handler.sendStatusOK(w)
-	fileUrlsBytes, _ := json.Marshal(prices)
-	w.Write(fileUrlsBytes)
+
+	var newPost common.Post
+	if err := json.Unmarshal(body, &newPost); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`{"status": "error", "message": "could not parse json"}`))
+		return
+	}
+
+	if err := handler.postHandler.HandlePost(&newPost); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(`{"status": "error", "message": "internal server error"}`))
+		return
+	}
+
+	w.Write([]byte(`{"status": "success"}`))
 }
