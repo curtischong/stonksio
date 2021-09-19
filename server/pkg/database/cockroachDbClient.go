@@ -121,7 +121,7 @@ func (client *CockroachDbClient) GetLatestPrice(
 	}
 
 	rows, err := client.conn.Query(context.Background(),
-		"SELECT tradePrice FROM price WHERE timestamp = MAX(timestamp)")
+		"SELECT tradePrice FROM price ORDER BY timestamp DESC LIMIT 1")
 	if err != nil {
 		return 0, err
 	}
