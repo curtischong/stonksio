@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	defaultAvgTime     = 2 // on avg, generate a new price every x seconds
+	defaultAvgTime     = 4 // on avg, generate a new price every x seconds
 	defaultLastPrice   = 3000.0
 	stdDevForRandPrice = 3.0
 )

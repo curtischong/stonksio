@@ -3,11 +3,12 @@ package database
 import (
 	"context"
 	"fmt"
-	"github.com/jackc/pgx/v4"
 	"log"
 	"stonksio/pkg/common"
 	"stonksio/pkg/config"
 	"time"
+
+	"github.com/jackc/pgx/v4"
 
 	"github.com/google/uuid"
 
@@ -104,7 +105,9 @@ func (client *CockroachDbClient) GetPrices(
 	prices := make([]common.Price, 0, n)
 	defer rows.Close()
 	for rows.Next() {
-		price := common.Price{}
+		price := common.Price{
+			Asset: asset,
+		}
 		var tradePrice float32
 		if err := rows.Scan(&tradePrice, &price.Timestamp); err != nil {
 			return nil, err

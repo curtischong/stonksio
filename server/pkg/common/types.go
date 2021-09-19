@@ -11,7 +11,6 @@ type Post struct {
 }
 
 type Price struct {
-	Id         string
 	Asset      string
 	TradePrice float32
 	Timestamp  time.Time
