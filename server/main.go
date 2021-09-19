@@ -45,6 +45,7 @@ func main() {
 	http.HandleFunc("/api/posts", requestHandler.HandleGetPosts)
 	http.HandleFunc("/api/prices/eth", requestHandler.HandleGetPrices)
 	http.HandleFunc("/api/wallet", requestHandler.HandleGetWallet)
+	http.HandleFunc("/api/buy/eth", requestHandler.HandleBuy)
 
 	// start
 	priceGenerator.Start()

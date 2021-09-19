@@ -77,12 +77,12 @@ func (handler *RequestHandler) HandleGetWallet(
 		return
 	}
 
-	balance, err := handler.cockroachDbClient.GetBalance("ETH", username)
+	wallet, err := handler.cockroachDbClient.GetWallet("ETH", username)
 	if err != nil {
 		handler.sendInternalServerError(w, err)
 		return
 	}
-	if balance == -1 {
+	if wallet == nil {
 		// create balance for user
 		err := handler.cockroachDbClient.InsertWallet(common.Wallet{
 			Username: username,
@@ -106,21 +106,77 @@ func (handler *RequestHandler) HandleGetWallet(
 
 	handler.sendStatusOK(w)
 
-	ethBalance, err := handler.cockroachDbClient.GetBalance("ETH", username)
+	ethWallet, err := handler.cockroachDbClient.GetWallet("ETH", username)
 	if err != nil {
 		handler.sendInternalServerError(w, err)
 		return
 	}
-	usdBalance, err := handler.cockroachDbClient.GetBalance("ETH", username)
+	usdWallet, err := handler.cockroachDbClient.GetWallet("USD", username)
 	if err != nil {
 		handler.sendInternalServerError(w, err)
 		return
 	}
 	walletData := make(map[string]string)
-	walletData["ETH"] = fmt.Sprintf("%f", ethBalance)
-	walletData["USD"] = fmt.Sprintf("%f", usdBalance)
+	walletData["ETH"] = fmt.Sprintf("%f", ethWallet.Balance)
+	walletData["USD"] = fmt.Sprintf("%f", usdWallet.Balance)
 	fileUrlsBytes, _ := json.Marshal(walletData)
 	w.Write(fileUrlsBytes)
+}
+
+func (handler *RequestHandler) HandleBuy(
+	w http.ResponseWriter, r *http.Request,
+) {
+	username := r.URL.Query().Get("username")
+	if username == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"status":  "error",
+			"message": "please specify a username",
+		})
+		return
+	}
+	sizeStr := r.URL.Query().Get("orderSize")
+	orderSize, err := strconv.Atoi(sizeStr)
+	if err != nil || orderSize <= 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"status":  "error",
+			"message": fmt.Sprintf("invalid orderSize=%s specified. It needs to be a positive int", sizeStr),
+		})
+		return
+	}
+
+	// check if they have enough money
+	usdWallet, err := handler.cockroachDbClient.GetWallet("USD", username)
+	if err != nil {
+		handler.sendInternalServerError(w, err)
+		return
+	}
+	ethPrice, err := handler.cockroachDbClient.GetLatestPrice("ETH")
+	if err != nil {
+		handler.sendInternalServerError(w, err)
+		return
+	}
+
+	orderPrice := float32(orderSize) * ethPrice
+	if orderPrice < usdWallet.Balance {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"status":  "error",
+			"message": "insufficient funds",
+		})
+		return
+	}
+	usdWallet.Balance -= orderPrice
+	handler.cockroachDbClient.UpdateWallet(*usdWallet)
+
+	ethWallet, err := handler.cockroachDbClient.GetWallet("ETH", username)
+	if err != nil {
+		handler.sendInternalServerError(w, err)
+		return
+	}
+	ethWallet.Balance += float32(orderSize)
+	handler.cockroachDbClient.UpdateWallet(*ethWallet)
 }
 
 func (handler *RequestHandler) HandlePostPost(

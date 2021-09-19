@@ -69,6 +69,18 @@ func (client *CockroachDbClient) InsertWallet(
 	})
 }
 
+func (client *CockroachDbClient) UpdateWallet(
+	wallet common.Wallet,
+) error {
+	return crdbpgx.ExecuteTx(context.Background(), client.db, pgx.TxOptions{}, func(tx pgx.Tx) error {
+		log.Printf("inserting wallet. balance=%f", wallet.Balance)
+		_, err := tx.Exec(context.Background(),
+			`UPDATE wallet SET ("balance") = ($1) WHERE username= $2 AND asset=$3`,
+			wallet.Balance, wallet.Username, wallet.Asset)
+		return err
+	})
+}
+
 func (client *CockroachDbClient) deleteAllPosts() error {
 	return crdbpgx.ExecuteTx(context.Background(), client.db, pgx.TxOptions{}, func(tx pgx.Tx) error {
 		log.Printf("Deleting all posts")
@@ -103,24 +115,27 @@ func (client *CockroachDbClient) GetPosts(n int) ([]common.Post, error) {
 	return posts, nil
 }
 
-func (client *CockroachDbClient) GetBalance(
+func (client *CockroachDbClient) GetWallet(
 	asset, username string,
-) (float32, error) {
+) (*common.Wallet, error) {
 	rows, err := client.db.Query(context.Background(),
-		`SELECT balance FROM wallet WHERE username=$1 AND asset=$2;`, username, asset)
+		`SELECT id, balance FROM wallet WHERE username=$1 AND asset=$2;`, username, asset)
 	if err != nil {
-		return 0, fmt.Errorf("cannot query balance for username=%s. err=%s", username, err)
+		return nil, fmt.Errorf("cannot query balance for username=%s. err=%s", username, err)
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var balance float32
-		if err := rows.Scan(&balance); err != nil {
-			return 0, err
+		wallet := common.Wallet{
+			Asset:    asset,
+			Username: username,
 		}
-		return balance, nil
+		if err := rows.Scan(&wallet.Id, &wallet.Balance); err != nil {
+			return nil, err
+		}
+		return &wallet, nil
 	}
 	//return 0, fmt.Errorf("no balance found for username=%s", username)
-	return -1, nil
+	return nil, nil
 }
 
 func (client *CockroachDbClient) GetPrices(
