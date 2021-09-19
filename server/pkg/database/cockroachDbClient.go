@@ -108,17 +108,17 @@ func (client *CockroachDbClient) GetLatestOhlc(
 	return 0, nil
 }
 
-func (client *CockroachDbClient) insertPrice(
-	asset string, price common.Price,
+func (client *CockroachDbClient) InsertPrice(
+	asset string, tradePrice float32,
 ) error {
 	if asset != "ETH" {
 		return fmt.Errorf("invalid asset=%s", asset)
 	}
 	return crdbpgx.ExecuteTx(context.Background(), client.conn, pgx.TxOptions{}, func(tx pgx.Tx) error {
-		log.Printf("Creating price=%s for asset=%s\n", price, asset)
+		log.Printf("Creating tradePrice=%s for asset=%s\n", tradePrice, asset)
 		_, err := tx.Exec(context.Background(),
-			"INSERT INTO price (asset, price, timestamp) VALUES ($1, $2, $3)",
-			asset, price.TradePrice, price.Timestamp)
+			"INSERT INTO tradePrice (asset, tradePrice, timestamp) VALUES ($1, $2, $3)",
+			asset, tradePrice, time.Now())
 		return err
 	})
 }

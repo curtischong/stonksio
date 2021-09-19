@@ -2,11 +2,12 @@ package feed
 
 import (
 	"context"
-	log "github.com/sirupsen/logrus"
 	"math/rand"
 	"stonksio/pkg/common"
 	"stonksio/pkg/config"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	twitterscraper "github.com/n0madic/twitter-scraper"
 )
@@ -25,7 +26,9 @@ type Feed struct {
 	buf         chan *common.Post
 }
 
-func NewFeed(config config.FeedConfig, postChannel chan<- *common.Post) *Feed {
+func NewFeed(
+	config config.FeedConfig, postChannel chan<- *common.Post,
+) *Feed {
 	scraper := twitterscraper.New()
 	scraper.SetSearchMode(twitterscraper.SearchTop)
 	scraper.WithDelay(scraperBackoffSeconds)
