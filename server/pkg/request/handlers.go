@@ -163,7 +163,7 @@ func (handler *RequestHandler) HandleBuy(
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{
 			"status":  "error",
-			"message": "insufficient funds",
+			"message": "insufficient USD",
 		})
 		return
 	}
@@ -176,6 +176,64 @@ func (handler *RequestHandler) HandleBuy(
 		return
 	}
 	ethWallet.Balance += float32(orderSize)
+	handler.cockroachDbClient.UpdateWallet(*ethWallet)
+}
+
+func (handler *RequestHandler) HandleSell(
+	w http.ResponseWriter, r *http.Request,
+) {
+	username := r.URL.Query().Get("username")
+	if username == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"status":  "error",
+			"message": "please specify a username",
+		})
+		return
+	}
+	sizeStr := r.URL.Query().Get("orderSize")
+	orderSize, err := strconv.Atoi(sizeStr)
+	if err != nil || orderSize <= 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"status":  "error",
+			"message": fmt.Sprintf("invalid orderSize=%s specified. It needs to be a positive int", sizeStr),
+		})
+		return
+	}
+
+	// check if they have enough ETH
+	ethWallet, err := handler.cockroachDbClient.GetWallet("ETH", username)
+	if err != nil {
+		handler.sendInternalServerError(w, err)
+		return
+	}
+
+	if orderSize > int(ethWallet.Balance) {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"status":  "error",
+			"message": "insufficient ETH",
+		})
+		return
+	}
+
+	ethPrice, err := handler.cockroachDbClient.GetLatestPrice("ETH")
+	if err != nil {
+		handler.sendInternalServerError(w, err)
+		return
+	}
+
+	usdWallet, err := handler.cockroachDbClient.GetWallet("USD", username)
+	if err != nil {
+		handler.sendInternalServerError(w, err)
+		return
+	}
+
+	usdWallet.Balance += ethPrice * float32(orderSize)
+	handler.cockroachDbClient.UpdateWallet(*usdWallet)
+
+	ethWallet.Balance -= float32(orderSize)
 	handler.cockroachDbClient.UpdateWallet(*ethWallet)
 }
 

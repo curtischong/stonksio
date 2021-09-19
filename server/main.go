@@ -47,6 +47,7 @@ func main() {
 	http.HandleFunc("/api/ohlc/eth", requestHandler.HandleGetOHLCs)
 	http.HandleFunc("/api/wallet", requestHandler.HandleGetWallet)
 	http.HandleFunc("/api/buy/eth", requestHandler.HandleBuy)
+	http.HandleFunc("/api/sell/eth", requestHandler.HandleSell)
 
 	// start
 	priceGenerator.Start()
