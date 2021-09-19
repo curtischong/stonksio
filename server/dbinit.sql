@@ -9,10 +9,10 @@ USE stonksio;
 DROP TABLE IF EXISTS post;
 CREATE TABLE post (
   id UUID PRIMARY KEY,
-  username TEXT,
-  userPicUrl TEXT,
-  body TEXT,
-  timestamp TIMESTAMP
+  username TEXT NOT NULL,
+  userPicUrl TEXT NOT NULL DEFAULT '',
+  body TEXT NOT NULL,
+  timestamp TIMESTAMP NOT NULL
 );
 
 DROP TABLE IF EXISTS price;
