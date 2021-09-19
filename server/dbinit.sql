@@ -6,19 +6,19 @@ CREATE DATABASE IF NOT EXISTS stonksio;
 
 USE stonksio;
 
-DROP TABLE IF EXISTS post
+DROP TABLE IF EXISTS post;
 CREATE TABLE post (
   id UUID PRIMARY KEY,
   username TEXT,
   userPicUrl TEXT,
   body TEXT,
-  timestamp TIMESTAMP,
+  timestamp TIMESTAMP
 );
 
-DROP TABLE IF EXISTS price
-CREATE TABLE price(
+DROP TABLE IF EXISTS price;
+CREATE TABLE price (
   id UUID PRIMARY KEY,
   asset TEXT,
   price DECIMAL,
-  timestamp TIMESTAMP,
+  timestamp TIMESTAMP
 );
