@@ -130,13 +130,12 @@ func (client *CockroachDbClient) GetLatestPrice(
 		return 0, err
 	}
 
-	return 0, nil
 	for rows.Next() {
 		var tradePrice float32
 		if err := rows.Scan(&tradePrice); err != nil {
 			return 0, err
 		}
-		//return tradePrice, nil
+		return tradePrice, nil
 	}
 	return 0, nil
 }
