@@ -9,6 +9,7 @@ import (
 	"stonksio/pkg/database"
 	"stonksio/pkg/post"
 	"strconv"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -16,8 +17,8 @@ import (
 )
 
 const (
-	defaultPricesCount = 100
-	defaultPostsCount  = 20
+	defaultPricesWindow = 5 * time.Minute
+	defaultPostsCount   = 20
 )
 
 type RequestHandler struct {
@@ -43,17 +44,17 @@ func NewRequestHandler(
 func (handler *RequestHandler) HandleGetPrices(
 	w http.ResponseWriter, r *http.Request,
 ) {
-	count, err := getCount(r, defaultPricesCount)
+	window, err := getWindow(r, defaultPricesWindow)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{
 			"status":  "error",
-			"message": "could not parse count",
+			"message": "could not parse window",
 		})
 		return
 	}
 
-	prices, err := handler.cockroachDbClient.GetPrices("ETH", count)
+	prices, err := handler.cockroachDbClient.GetPrices("ETH", window)
 	if err != nil {
 		handler.sendInternalServerError(w, err)
 		return
@@ -136,5 +137,13 @@ func getCount(r *http.Request, defaultCount int) (int, error) {
 		return strconv.Atoi(count)
 	} else {
 		return defaultCount, nil
+	}
+}
+
+func getWindow(r *http.Request, defaultWindow time.Duration) (time.Duration, error) {
+	if window := r.URL.Query().Get("window"); window != "" {
+		return time.ParseDuration(window)
+	} else {
+		return defaultWindow, nil
 	}
 }
