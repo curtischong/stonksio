@@ -151,6 +151,46 @@ func (client *CockroachDbClient) GetPrices(
 	return prices, nil
 }
 
+func (client *CockroachDbClient) GetOHLCs(count int) ([]common.OHLC, error) {
+	rows, err := client.db.Query(context.Background(), `
+		with intervals as (
+		  select start, start + interval '1min' as end
+		  from generate_series(
+			date_trunc('minute', NOW()::timestamp - ($1-1) * interval '1 min'),
+			date_trunc('minute', NOW()::timestamp),
+			interval '1min')
+	      as start
+		)
+		select distinct
+		  intervals.start as date,
+		  min(p.tradeprice) over w as low,
+		  max(p.tradeprice) over w as high,
+		  first_value(p.tradeprice) over w as open,
+		  last_value(p.tradeprice) over w as close
+		from
+		  intervals
+		  join price p on
+		    p.timestamp >= intervals.start and
+		    p.timestamp < intervals.end
+		window w as (partition by intervals.start order by p.timestamp asc rows between unbounded preceding and unbounded following)
+		order by intervals.start
+	`, count)
+	if err != nil {
+		return nil, err
+	}
+
+	ohlcs := make([]common.OHLC, 0)
+	defer rows.Close()
+	for rows.Next() {
+		ohlc := common.OHLC{}
+		if err := rows.Scan(&ohlc.StartTime, &ohlc.Low, &ohlc.High, &ohlc.Open, &ohlc.Close); err != nil {
+			return nil, err
+		}
+		ohlcs = append(ohlcs, ohlc)
+	}
+	return ohlcs, nil
+}
+
 func (client *CockroachDbClient) GetLatestPrice(
 	asset string,
 ) (float32, error) {

@@ -29,6 +29,12 @@ func TestViewDb(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
+	t.Run("viewOHLCs", func(t *testing.T) {
+		ohlcs, err := dbClient.GetOHLCs(5)
+		fmt.Println(ohlcs)
+		assert.NoError(t, err)
+	})
+
 	t.Run("viewBalance", func(t *testing.T) {
 		prices, err := dbClient.GetBalance("ETH", "splacorn")
 		fmt.Println(prices)
@@ -57,14 +63,6 @@ func TestInsertDb(t *testing.T) {
 			Asset:      "ETH",
 			TradePrice: 2311.3,
 			Timestamp:  time.Now(),
-		})
-		assert.NoError(t, err)
-	})
-	t.Run("insertBalance", func(t *testing.T) {
-		err := dbClient.InsertWallet(common.Wallet{
-			Username: "splacorn",
-			Balance:  100000,
-			Asset:    "ETH",
 		})
 		assert.NoError(t, err)
 	})

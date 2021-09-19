@@ -16,14 +16,12 @@ type Price struct {
 	Timestamp  time.Time
 }
 
-type Ohlc struct {
-	Id        string
-	Open      string
-	High      string
-	Low       string
-	Close     string
+type OHLC struct {
+	Open      float32
+	High      float32
+	Low       float32
+	Close     float32
 	StartTime time.Time
-	EndTime   time.Time
 }
 
 type Wallet struct {
