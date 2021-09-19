@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	defaultAvgTime       = 1 // on avg, generate a new price every x seconds
+	defaultAvgTime       = 3 // on avg, generate a new price every x seconds
 	defaultStartingPrice = 3000.0
 	stdDevForRandPrice   = 3.0
 )
@@ -27,6 +27,7 @@ type PriceGenerator struct {
 	globalSentiment   float32
 	minuteSentiment   float32
 	globalMomentum    float32
+	minuteMomentum    float32
 	averageTime       int
 }
 
@@ -51,6 +52,7 @@ func NewPriceGenerator(
 		logger:            log.New(),
 		averageTime:       defaultAvgTime,
 		globalMomentum:    0,
+		globalSentiment:   3000,
 	}
 }
 
@@ -81,24 +83,36 @@ func (g *PriceGenerator) GetNewPriceFromPostSentiment(
 	if err != nil {
 		return nil, err
 	}
-	g.globalSentiment += float32(sentiment.Score * 0.1)
-	// since magnitude is from [0, inf) I'm using a sqrt so it doesn't explode
-	// TODO: consider switching to log if need be
-	g.minuteSentiment += float32(math.Sqrt(float64(sentiment.Magnitude)) * 0.1)
+
+	// in the future the coefficient we multiply the score by should be dependent on who says it
+	g.globalSentiment += sentiment.Score * 30
+
+	sentimentDirection := 1.0
+	if sentiment.Score < 0 {
+		sentimentDirection = -1.0
+	}
+
+	// since magnitude is from [0, inf) I'm using a sigmoid so it doesn't explode
+	// Thus, the minute sentiment will now be from [-20, 20]
+	g.minuteSentiment += float32(sentimentDirection*float64(sentiment.Magnitude)) * 20
 	return g.getNewPrice(), nil
 }
 
+func (g *PriceGenerator) sigmoid(x float32) float32 {
+	return float32(1 / (1 + math.Exp(-float64(x))))
+}
+
 func (g *PriceGenerator) getNewPrice() *common.Price {
-	sentimentPrice := g.globalSentiment*5 + g.minuteSentiment*5
 	// this is to bring is back to the default starting price
 	// we are using bang-bang control to over-compensate
-	g.globalMomentum += defaultStartingPrice - g.lastPrice
-	momentumPrice := g.globalMomentum*0.05 + float32(rand.NormFloat64()*6)
+	g.globalMomentum += g.globalSentiment - g.lastPrice
+	globalMomentumPrice := g.globalMomentum * 0.05
 
 	noise := float32(rand.NormFloat64() * stdDevForRandPrice)
-	newPrice := sentimentPrice + momentumPrice + noise
+	newPrice := g.minuteSentiment + globalMomentumPrice + noise
 	// the exponential function is always positive. By feeding it -newPrice we will trend up more the closer past 0 the price is
-	newPrice = float32(math.Max(0, float64(newPrice)+3*math.Exp(float64(-newPrice)))) // bound the newPrice so it can't be lower than 0
+	// offset the exponential function to the right a bit
+	newPrice = float32(math.Max(0, float64(newPrice)+3*math.Exp(float64(-newPrice-10.0)))) // bound the newPrice so it can't be lower than 0
 	log.Infof("globalSentiment: %f, globalMomentum: %f, price: %f", g.globalSentiment, g.globalMomentum, newPrice)
 	g.lastPrice = newPrice
 	return &common.Price{
