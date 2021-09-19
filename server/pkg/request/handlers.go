@@ -9,6 +9,7 @@ import (
 	"stonksio/pkg/database"
 	"stonksio/pkg/post"
 	"stonksio/pkg/websocket"
+	"strconv"
 
 	"github.com/google/uuid"
 
@@ -40,13 +41,25 @@ func NewRequestHandler(
 func (handler *RequestHandler) HandleGetPrices(
 	w http.ResponseWriter, r *http.Request,
 ) {
-	prices, err := handler.cockroachDbClient.GetPrices("ETH", 100)
+	var num = 50
+	if n := r.URL.Query().Get("n"); n != "" {
+		var err error
+		num, err = strconv.Atoi(n)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]string{
+				"status":  "error",
+				"message": "could not parse 'n'",
+			})
+			return
+		}
+	}
+	prices, err := handler.cockroachDbClient.GetPrices("ETH", num)
 	if err != nil {
 		handler.sendInternalServerError(w, err)
 	}
 	handler.sendStatusOK(w)
-	fileUrlsBytes, _ := json.Marshal(prices)
-	w.Write(fileUrlsBytes)
+	json.NewEncoder(w).Encode(prices)
 }
 
 func (handler *RequestHandler) HandlePostPost(
