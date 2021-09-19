@@ -22,3 +22,10 @@ CREATE TABLE price (
   tradeprice DECIMAL,
   timestamp TIMESTAMP
 );
+
+DROP TABLE IF EXISTS wallet;
+CREATE TABLE wallet(
+   id UUID PRIMARY KEY,
+   username TEXT,
+   balance DECIMAL
+);

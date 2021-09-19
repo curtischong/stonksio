@@ -28,6 +28,12 @@ func TestViewDb(t *testing.T) {
 		fmt.Println(prices)
 		assert.NoError(t, err)
 	})
+
+	t.Run("viewBalance", func(t *testing.T) {
+		prices, err := dbClient.GetBalance("splacorn")
+		fmt.Println(prices)
+		assert.NoError(t, err)
+	})
 }
 
 func TestInsertDb(t *testing.T) {
@@ -51,6 +57,13 @@ func TestInsertDb(t *testing.T) {
 			Asset:      "ETH",
 			TradePrice: 2311.3,
 			Timestamp:  time.Now(),
+		})
+		assert.NoError(t, err)
+	})
+	t.Run("insertBalance", func(t *testing.T) {
+		err := dbClient.InsertWallet(common.Wallet{
+			Username: "splacorn",
+			Balance:  100000,
 		})
 		assert.NoError(t, err)
 	})

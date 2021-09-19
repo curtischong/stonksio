@@ -25,3 +25,9 @@ type Ohlc struct {
 	StartTime time.Time
 	EndTime   time.Time
 }
+
+type Wallet struct {
+	Id       string
+	Username string
+	Balance  float32
+}

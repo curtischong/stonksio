@@ -57,6 +57,18 @@ func (client *CockroachDbClient) InsertPost(
 	})
 }
 
+func (client *CockroachDbClient) InsertWallet(
+	wallet common.Wallet,
+) error {
+	return crdbpgx.ExecuteTx(context.Background(), client.db, pgx.TxOptions{}, func(tx pgx.Tx) error {
+		log.Printf("inserting wallet. balance=%f", wallet.Balance)
+		_, err := tx.Exec(context.Background(),
+			`INSERT INTO wallet ("id", "username", "balance") VALUES ($1, $2, $3)`,
+			uuid.New().String(), wallet.Username, wallet.Balance)
+		return err
+	})
+}
+
 func (client *CockroachDbClient) deleteAllPosts() error {
 	return crdbpgx.ExecuteTx(context.Background(), client.db, pgx.TxOptions{}, func(tx pgx.Tx) error {
 		log.Printf("Deleting all posts")
@@ -89,6 +101,25 @@ func (client *CockroachDbClient) GetPosts(n int) ([]common.Post, error) {
 		posts = append(posts, post)
 	}
 	return posts, nil
+}
+
+func (client *CockroachDbClient) GetBalance(
+	username string,
+) (float32, error) {
+	rows, err := client.db.Query(context.Background(),
+		`SELECT balance FROM wallet WHERE username=$1;`, username)
+	if err != nil {
+		return 0, fmt.Errorf("cannot query balance for username=%s. err=%s", username, err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var balance float32
+		if err := rows.Scan(&balance); err != nil {
+			return 0, err
+		}
+		return balance, nil
+	}
+	return 0, fmt.Errorf("no balance found for username=%s", username)
 }
 
 func (client *CockroachDbClient) GetPrices(
@@ -139,7 +170,7 @@ func (client *CockroachDbClient) GetLatestPrice(
 		}
 		return tradePrice, nil
 	}
-	return 0, nil
+	return 0, fmt.Errorf("no latest price found")
 }
 
 func (client *CockroachDbClient) InsertPrice(price common.Price) error {
