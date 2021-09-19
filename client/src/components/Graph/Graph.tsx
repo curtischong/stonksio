@@ -10,24 +10,33 @@ const GraphContainer = styled.div`
   width: 100%;
 `;
 
+const PriceText = styled.div`
+  font-size: 16px;
+  font-weight: 600;
+  color: #474b52;
+`;
+
 const mapFromPriceResponse = (resp: ServerPrice): Price => {
   return {
-    x: resp.Timestamp,
+    x: new Date(resp.Timestamp),
     y: parseFloat(resp.TradePrice)
   };
 }
 
 const Graph: React.FC = () => {
   const [prices, setPrices] = useState([]);
+  const [currentPrice, setCurrentPrice] = useState(0.00);
 
   useEffect(() => {
     const onPriceReceived = (resp: ServerPrice) => {
+      const newPrice: Price = mapFromPriceResponse(resp);
       setPrices((prevPrices: Price[]): any => {
-        return [...prevPrices, mapFromPriceResponse(resp)];
+        return [...prevPrices, newPrice];
       });
+      setCurrentPrice(newPrice.y);
     };
 
-    const getTweets = () => {
+    const getPrices = () => {
       fetch("https://stonk.st/api/prices/eth?window=5m").then(resp => {
         return resp.json()
       }).then(json => {
@@ -40,7 +49,7 @@ const Graph: React.FC = () => {
       channel.bind('new-price', onPriceReceived);
     };
 
-    getTweets();
+    getPrices();
     setupPusher();
 
     return (): void => {
@@ -49,57 +58,60 @@ const Graph: React.FC = () => {
   }, []);
 
   return (
-    <GraphContainer>
-      <VictoryChart>
-        <VictoryAxis 
-          style={{
-            axis: {
-              stroke: 'white'
-            },
-            tickLabels: {
-              fill: 'white'
-            },
-            grid: { stroke: "#818e99", strokeWidth: 0.5 }
-          }}
-        />
-        <VictoryAxis 
-          dependentAxis
-          style={{
-            axis: {
-              stroke: 'white'
-            },
-            tickLabels: {
-              fill: 'white'
-            },
-            grid: { stroke: "#818e99", strokeWidth: 0.5 }
-          }}
-        />
-        <VictoryLine
-          labelComponent={
-            <VictoryTooltip
-                constrainToVisibleArea
-                cornerRadius={0}
-                flyoutStyle={{
-                  fill: "transparent",
-                  strokeWidth: 0
-                }}
-                pointerLength={0}
-                style={{
-                  fontSize: 16,
-                  fill: "#ffffff",
-                }}
-              />
-          }
-          style={{
-            data: { stroke: "#c43a31" }
-          }}
-          data={prices}
-          animate={{
-            duration: 2000,
-          }}
-        />
-      </VictoryChart>
-    </GraphContainer>
+    <>
+      <PriceText>US${currentPrice}</PriceText>
+      <GraphContainer>
+        <VictoryChart
+          scale={{ x: "time" }}
+        >
+          <VictoryAxis 
+            style={{
+              axis: {
+                stroke: 'white'
+              },
+              tickLabels: {
+                fill: 'white'
+              },
+            }}
+          />
+          <VictoryAxis 
+            dependentAxis
+            style={{
+              axis: {
+                stroke: 'white'
+              },
+              tickLabels: {
+                fill: 'white'
+              },
+            }}
+          />
+          <VictoryLine
+            labelComponent={
+              <VictoryTooltip
+                  constrainToVisibleArea
+                  cornerRadius={0}
+                  flyoutStyle={{
+                    fill: "transparent",
+                    strokeWidth: 0
+                  }}
+                  pointerLength={0}
+                  style={{
+                    fontSize: 16,
+                    fill: "#ffffff",
+                  }}
+                />
+            }
+            style={{
+              data: { stroke: "#c43a31" }
+            }}
+            data={prices}
+            animate={{
+              duration: 2000,
+            }}
+          />
+        </VictoryChart>
+      </GraphContainer>
+    </>
   );
 }
 
