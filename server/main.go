@@ -41,7 +41,7 @@ func main() {
 	requestHandler := request.NewRequestHandler(config, cockroachDbClient, postHandler)
 
 	sendTestPush(requestHandler)
-	http.HandleFunc("api/post", requestHandler.HandlePostPost)
+	http.HandleFunc("/api/post", requestHandler.HandlePostPost)
 	http.HandleFunc("/api/prices/eth", requestHandler.HandleGetPrices)
 	log.Info("Starting server on port 8090")
 
