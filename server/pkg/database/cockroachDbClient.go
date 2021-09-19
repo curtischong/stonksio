@@ -6,6 +6,7 @@ import (
 	"log"
 	"stonksio/pkg/common"
 	"stonksio/pkg/config"
+	"time"
 
 	"github.com/jackc/pgx/v4"
 
@@ -91,17 +92,18 @@ func (client *CockroachDbClient) GetPosts(n int) ([]common.Post, error) {
 }
 
 func (client *CockroachDbClient) GetPrices(
-	asset string, n int,
+	asset string, window time.Duration,
 ) ([]common.Price, error) {
 	if asset != "ETH" {
 		return nil, fmt.Errorf("invalid asset=%s", asset)
 	}
+	startTime := time.Now().Add(-window)
 	rows, err := client.db.Query(context.Background(),
-		`SELECT tradePrice, timestamp FROM price WHERE asset=$1 ORDER BY timestamp DESC LIMIT $2;`, asset, n)
+		`SELECT tradePrice, timestamp FROM price WHERE asset=$1 AND timestamp > $2 ORDER BY timestamp;`, asset, startTime)
 	if err != nil {
 		return nil, fmt.Errorf("cannot query prices. err=%s", err)
 	}
-	prices := make([]common.Price, 0, n)
+	prices := make([]common.Price, 0)
 	defer rows.Close()
 	for rows.Next() {
 		price := common.Price{

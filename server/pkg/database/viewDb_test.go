@@ -24,7 +24,7 @@ func TestViewDb(t *testing.T) {
 	})
 
 	t.Run("viewPrices", func(t *testing.T) {
-		prices, err := dbClient.GetPrices("ETH", 100)
+		prices, err := dbClient.GetPrices("ETH", 5*time.Minute)
 		fmt.Println(prices)
 		assert.NoError(t, err)
 	})

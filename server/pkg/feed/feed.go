@@ -13,7 +13,6 @@ import (
 )
 
 const (
-	username              = "ape"
 	scraperBackoffSeconds = 5
 	query                 = "ethereum -filter:media -filter:retweets"
 )
@@ -80,7 +79,7 @@ func (f *Feed) fetch() {
 		for tweet := range f.scraper.SearchTweets(context.Background(), query, 50) {
 			f.buf <- &common.Post{
 				Id:       tweet.ID,
-				Username: username, // not actual tweet username
+				Username: tweet.Username,
 				Body:     tweet.Text,
 			}
 		}
