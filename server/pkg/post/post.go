@@ -1,7 +1,6 @@
 package post
 
 import (
-	"fmt"
 	"stonksio/pkg/common"
 	"stonksio/pkg/database"
 	"stonksio/pkg/generator/price"
@@ -22,6 +21,18 @@ func NewPostHandler(
 	}
 }
 
-func (h *PostHandler) HandlePost(post *common.Post) {
-	fmt.Println(post)
+func (h *PostHandler) HandlePost(post *common.Post) error {
+	if err := h.cockroachDbClient.InsertPost(*post); err != nil {
+		return err
+	}
+
+	newPrice, err := h.priceGenerator.GetNewPriceFromPostSentiment(post.Body)
+	if err != nil {
+		return err
+	}
+	if err := h.cockroachDbClient.InsertPrice("ETH", newPrice); err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -38,7 +38,7 @@ func main() {
 
 	conductorSrv := conductor.NewConductor(config, cockroachDbClient, postHandler, incomingPosts, incomingPrices)
 
-	requestHandler := request.NewRequestHandler(config, cockroachDbClient)
+	requestHandler := request.NewRequestHandler(config, cockroachDbClient, postHandler)
 
 	sendTestPush(requestHandler)
 	http.HandleFunc("api/post", requestHandler.HandlePostPost)
