@@ -42,7 +42,7 @@ func (client *CockroachDbClient) closeConn() {
 	client.conn.Close(context.Background())
 }
 
-func (client *CockroachDbClient) insertPost(
+func (client *CockroachDbClient) InsertPost(
 	post common.Post,
 ) error {
 	return crdbpgx.ExecuteTx(context.Background(), client.conn, pgx.TxOptions{}, func(tx pgx.Tx) error {
@@ -62,7 +62,7 @@ func (client *CockroachDbClient) deleteAllPosts() error {
 	})
 }
 
-func (client *CockroachDbClient) getPosts(n int) ([]common.Post, error) {
+func (client *CockroachDbClient) GetPosts(n int) ([]common.Post, error) {
 	rows, err := client.conn.Query(context.Background(), `SELECT 'id', 'username', 'userpicurl', 'body', 'timestamp' FROM post LIMIT $1;`, n)
 	if err != nil {
 		return nil, fmt.Errorf("cannot query rows. err=%s", err)

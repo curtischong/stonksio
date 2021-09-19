@@ -3,8 +3,13 @@ package main
 import (
 	"net/http"
 	"stonksio/pkg/common"
+	"stonksio/pkg/conductor"
+	"stonksio/pkg/database"
 	"stonksio/pkg/feed"
+	"stonksio/pkg/generator/price"
+	"stonksio/pkg/post"
 	"stonksio/pkg/request"
+	"stonksio/pkg/sentiment"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -20,14 +25,31 @@ func main() {
 		log.Fatalf("couldn't load config path=%s, err=%s", configPath, err)
 	}
 
-	_ = feed.NewFeed(config.Feed, nil)
+	cockroachDbClient := database.NewCockroachDbClient(config)
+	gcpClient := sentiment.NewGcpClient()
 
-	requestHandler := request.NewRequestHandler(config)
+	incomingPrices := make(chan *common.Price)
+	priceGenerator := price.NewPriceGenerator(cockroachDbClient, gcpClient, incomingPrices, "ETH")
+
+	postHandler := post.NewPostHandler(cockroachDbClient, priceGenerator)
+
+	incomingPosts := make(chan *common.Post)
+	feedSrv := feed.NewFeed(config.Feed, incomingPosts)
+
+	conductorSrv := conductor.NewConductor(config, cockroachDbClient, postHandler, incomingPosts, incomingPrices)
+
+	requestHandler := request.NewRequestHandler(config, cockroachDbClient, postHandler)
 
 	sendTestPush(requestHandler)
 	http.HandleFunc("api/post", requestHandler.HandlePostPost)
 	http.HandleFunc("/api/prices/eth", requestHandler.HandleGetPrices)
 	log.Info("Starting server on port 8090")
+
+	// start
+	priceGenerator.Start()
+	feedSrv.Start()
+	conductorSrv.Start()
+
 	err = http.ListenAndServe(":8090", nil)
 	if err != nil {
 		log.Fatalf("Cannot start server err=%s", err)

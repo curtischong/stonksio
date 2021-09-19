@@ -2,21 +2,17 @@ package conductor
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"stonksio/pkg/common"
 	"stonksio/pkg/config"
 	"stonksio/pkg/database"
-	"stonksio/pkg/feed"
-	"stonksio/pkg/generator/price"
-	"stonksio/pkg/sentiment"
-
-	log "github.com/sirupsen/logrus"
+	"stonksio/pkg/post"
 )
 
 type Conductor struct {
-	feed              *feed.Feed
-	priceGenerator    *price.PriceGenerator
-	incomingPosts     chan *common.Post
-	incomingPrices    chan *common.Price
+	postHandler       *post.PostHandler
+	incomingPosts     <-chan *common.Post
+	incomingPrices    <-chan *common.Price
 	cockroachDbClient *database.CockroachDbClient
 	logger            *log.Logger
 }
@@ -24,53 +20,42 @@ type Conductor struct {
 func NewConductor(
 	config *config.Config,
 	cockroachDbClient *database.CockroachDbClient,
-	gcpClient sentiment.GcpClient,
+	postHandler *post.PostHandler,
+	incomingPosts <-chan *common.Post,
+	incomingPrices <-chan *common.Price,
 ) *Conductor {
-	incomingPosts := make(chan *common.Post)
-	incomingPrices := make(chan *common.Price)
 	conductor := &Conductor{
 		logger:            log.New(),
-		feed:              feed.NewFeed(config.Feed, incomingPosts),
-		priceGenerator:    price.NewPriceGenerator(cockroachDbClient, gcpClient, incomingPrices, "ETH"),
 		cockroachDbClient: cockroachDbClient,
+		postHandler:       postHandler,
 		incomingPosts:     incomingPosts,
+		incomingPrices:    incomingPrices,
 	}
-	conductor.feed.Start()
-	conductor.priceGenerator.Start()
-	go conductor.Start()
 	return conductor
 }
 
 func (c *Conductor) Start() {
+	go c.consumer()
+}
+
+func (c *Conductor) consumer() {
 	defer func() {
 		if err := recover(); err != nil {
 			c.logger.Warnf("Conductor job died, restarting. err=%s", err)
-			go c.Start()
+			go c.consumer()
 		}
 	}()
 
 	for {
 		select {
 		case post := <-c.incomingPosts:
-			fmt.Println(post)
-			// TODO: write post to db
-			tradePrice, err := c.priceGenerator.GetNewPriceFromPostSentiment(post.Body)
-			if err != nil {
-				log.Errorf("cannot get price from post sentiment err=%s", err)
-				continue
-			}
-			if err := c.cockroachDbClient.InsertPrice("ETH", tradePrice); err != nil {
-				log.Errorf("cannot insert price err=%s", err)
-				continue
-			}
+			c.postHandler.HandlePost(post)
 
 		case price := <-c.incomingPrices:
 			fmt.Println(price)
 			if err := c.cockroachDbClient.InsertPrice("ETH", price.TradePrice); err != nil {
 				log.Errorf("cannot insert price err=%s", err)
-				continue
 			}
 		}
-
 	}
 }
