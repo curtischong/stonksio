@@ -71,7 +71,7 @@ const Graph: React.FC = () => {
       <svg style={{ height: 0 }}>
         <defs>
           <linearGradient id="gradient" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="#ff6961"/>
+            <stop offset="0%" stopColor="#4E2A84"/>
             <stop offset="100%" stopColor="#1a1b20"/>
           </linearGradient>
         </defs>
@@ -115,7 +115,7 @@ const Graph: React.FC = () => {
           <VictoryArea
             style={{
               data: { 
-                stroke: "#ff6961",
+                stroke: "#4E2A84",
                 strokeWidth: 0.5,
                 fill: "url(#gradient)",
                 fillOpacity: 0.5
