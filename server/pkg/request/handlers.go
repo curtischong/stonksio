@@ -2,6 +2,7 @@ package request
 
 import (
 	"encoding/json"
+	"github.com/google/uuid"
 	"io"
 	"net/http"
 	"stonksio/pkg/common"
@@ -64,6 +65,9 @@ func (handler *RequestHandler) HandlePostPost(
 		w.Write([]byte(`{"status": "error", "message": "could not parse json"}`))
 		return
 	}
+
+	// Create ID for post
+	newPost.Id = uuid.New().String()
 
 	if err := handler.postHandler.HandlePost(&newPost); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
