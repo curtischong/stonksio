@@ -62,6 +62,28 @@ func (client *CockroachDbClient) deleteAllPosts() error {
 	})
 }
 
+func (client *CockroachDbClient) getPosts(n int) ([]common.Post, error) {
+	rows, err := client.conn.Query(context.Background(), "SELECT id, username, userPicUrl, body, timestamp FROM post ORDER DESC LIMIT $1", n)
+	if err != nil {
+		return nil, err
+	}
+	posts := make([]common.Post, 0, n)
+	defer rows.Close()
+	for rows.Next() {
+		post := common.Post{}
+		var timestamp string
+		if err := rows.Scan(&post.Id, &post.Username, &post.UserPicUrl, &post.Body, &timestamp); err != nil {
+			return nil, err
+		}
+		post.Timestamp, err = time.Parse(time.RFC3339, timestamp)
+		if err != nil {
+			return nil, fmt.Errorf("cannot parse post.Timestamp=%s, err=%s", timestamp, err)
+		}
+		posts = append(posts, post)
+	}
+	return posts, nil
+}
+
 func (client *CockroachDbClient) GetPrices(
 	asset string,
 ) ([]common.Price, error) {
@@ -77,7 +99,7 @@ func (client *CockroachDbClient) GetPrices(
 	for rows.Next() {
 		price := common.Price{}
 		var timestamp string
-		if err := rows.Scan(&price.TradePrice); err != nil {
+		if err := rows.Scan(&price.TradePrice, &timestamp); err != nil {
 			return nil, err
 		}
 		price.Timestamp, err = time.Parse(time.RFC3339, timestamp)
