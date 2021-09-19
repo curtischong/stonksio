@@ -1,13 +1,13 @@
 export interface Tweet {
   name: string;
   msg: string;
-  timestamp: string;
+  timestamp: Date;
 }
 
-export interface TweetReponse {
-  Id: string;
+export interface ServerTweet {
+  Id?: string;
   Username: string;
-  UsrPicUrl: string;
+  UsrPicUrl?: string;
   Body: string;
   Timestamp: string;
 }
