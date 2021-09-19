@@ -53,10 +53,14 @@ func NewPriceGenerator(
 }
 
 func (g *PriceGenerator) Start() {
+	go g.generatePrices()
+}
+
+func (g *PriceGenerator) generatePrices() {
 	defer func() {
 		if err := recover(); err != nil {
-			g.logger.Warnf("Price Start job died, restarting. err=%s", err)
-			go g.Start()
+			g.logger.Warnf("Price job died, restarting. err=%s", err)
+			go g.generatePrices()
 		}
 	}()
 

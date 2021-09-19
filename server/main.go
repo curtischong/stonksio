@@ -43,13 +43,13 @@ func main() {
 	sendTestPush(requestHandler)
 	http.HandleFunc("/api/post", requestHandler.HandlePostPost)
 	http.HandleFunc("/api/prices/eth", requestHandler.HandleGetPrices)
-	log.Info("Starting server on port 8090")
 
 	// start
 	priceGenerator.Start()
 	feedSrv.Start()
 	conductorSrv.Start()
 
+	log.Info("Starting server on port 8090")
 	err = http.ListenAndServe(":8090", nil)
 	if err != nil {
 		log.Fatalf("Cannot start server err=%s", err)
