@@ -6,6 +6,7 @@ require (
 	cloud.google.com/go/language v0.1.0
 	github.com/cockroachdb/cockroach-go/v2 v2.1.1
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
+	github.com/google/uuid v1.1.2
 	github.com/googleapis/gax-go/v2 v2.1.1 // indirect
 	github.com/jackc/pgx/v4 v4.13.0
 	github.com/lib/pq v1.10.3 // indirect

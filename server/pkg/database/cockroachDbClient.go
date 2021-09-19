@@ -8,6 +8,8 @@ import (
 	"stonksio/pkg/config"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/cockroachdb/cockroach-go/v2/crdb/crdbpgx"
 
 	"github.com/jackc/pgx/v4"
@@ -48,8 +50,8 @@ func (client *CockroachDbClient) InsertPost(
 	return crdbpgx.ExecuteTx(context.Background(), client.conn, pgx.TxOptions{}, func(tx pgx.Tx) error {
 		log.Printf("Creating post=%s\n", post)
 		_, err := tx.Exec(context.Background(),
-			"INSERT INTO post (id, message) VALUES ($1, $2, $3, $4)",
-			post.Username, post.UserPicUrl, post.Body, post.Timestamp)
+			`INSERT INTO post (id, username, "userpicurl", "body", "timestamp") VALUES ($1, $2, $3, $4, $5)`,
+			uuid.New().String(), post.Username, post.UserPicUrl, post.Body, post.Timestamp)
 		return err
 	})
 }
