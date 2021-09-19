@@ -15,6 +15,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const (
+	defaultPricesCount = 100
+	defaultPostsCount  = 20
+)
+
 type RequestHandler struct {
 	logger            *log.Logger
 	config            *config.Config
@@ -38,22 +43,20 @@ func NewRequestHandler(
 func (handler *RequestHandler) HandleGetPrices(
 	w http.ResponseWriter, r *http.Request,
 ) {
-	var num = 50
-	if n := r.URL.Query().Get("n"); n != "" {
-		var err error
-		num, err = strconv.Atoi(n)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(map[string]string{
-				"status":  "error",
-				"message": "could not parse 'n'",
-			})
-			return
-		}
+	count, err := getCount(r, defaultPricesCount)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"status":  "error",
+			"message": "could not parse count",
+		})
+		return
 	}
-	prices, err := handler.cockroachDbClient.GetPrices("ETH", num)
+
+	prices, err := handler.cockroachDbClient.GetPrices("ETH", count)
 	if err != nil {
 		handler.sendInternalServerError(w, err)
+		return
 	}
 	handler.sendStatusOK(w)
 	json.NewEncoder(w).Encode(prices)
@@ -99,4 +102,39 @@ func (handler *RequestHandler) HandlePostPost(
 	json.NewEncoder(w).Encode(map[string]string{
 		"status": "success",
 	})
+}
+
+func (handler *RequestHandler) HandleGetPosts(
+	w http.ResponseWriter, r *http.Request,
+) {
+	count, err := getCount(r, defaultPostsCount)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"status":  "error",
+			"message": "could not parse count",
+		})
+		return
+	}
+
+	posts, err := handler.cockroachDbClient.GetPosts(count)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{
+			"status":  "error",
+			"message": "internal server error",
+		})
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(posts)
+}
+
+func getCount(r *http.Request, defaultCount int) (int, error) {
+	if count := r.URL.Query().Get("count"); count != "" {
+		return strconv.Atoi(count)
+	} else {
+		return defaultCount, nil
+	}
 }
