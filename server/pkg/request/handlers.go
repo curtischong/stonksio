@@ -39,7 +39,7 @@ func NewRequestHandler(
 func (handler *RequestHandler) HandleGetPrices(
 	w http.ResponseWriter, r *http.Request,
 ) {
-	prices, err := handler.cockroachDbClient.GetPrices("ETH")
+	prices, err := handler.cockroachDbClient.GetPrices("ETH", 10)
 	if err != nil {
 		handler.sendInternalServerError(w, err)
 	}
