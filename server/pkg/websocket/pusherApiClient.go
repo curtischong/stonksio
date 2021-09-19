@@ -44,3 +44,9 @@ func (client *PusherClient) PushPrice(
 		client.logger.Errorf("could not push price, err=%s", err)
 	}
 }
+
+func (client *PusherClient) PushOHLC(ohlc *common.OHLC) {
+	if err := client.socketClient.Trigger("ohlcs", "ohlc-update", ohlc); err != nil {
+		client.logger.Errorf("could not push ohlc, err=%s", err)
+	}
+}
