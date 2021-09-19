@@ -70,7 +70,7 @@ const HomePage: React.FC = () => {
 
     const onTweetReceived = (resp: ServerTweet) => {
       setTweets((prevTweets: Tweet[]): any => {
-        return [...prevTweets, mapFromTweetResponse(resp)];
+        return [mapFromTweetResponse(resp), ...prevTweets, mapFromTweetResponse(resp)];
       });
     };
 
