@@ -73,7 +73,8 @@ func (client *CockroachDbClient) deleteAllPrices() error {
 }
 
 func (client *CockroachDbClient) GetPosts(n int) ([]common.Post, error) {
-	rows, err := client.conn.Query(context.Background(), `SELECT id, username, userpicurl, body, timestamp FROM post ORDER BY timestamp DESC LIMIT $1;`, n)
+	rows, err := client.conn.Query(context.Background(),
+		`SELECT id, username, userpicurl, body, timestamp FROM post ORDER BY timestamp DESC LIMIT $1;`, n)
 	if err != nil {
 		return nil, fmt.Errorf("cannot query rows. err=%s", err)
 	}
@@ -90,16 +91,17 @@ func (client *CockroachDbClient) GetPosts(n int) ([]common.Post, error) {
 }
 
 func (client *CockroachDbClient) GetPrices(
-	asset string,
+	asset string, n int,
 ) ([]common.Price, error) {
 	if asset != "ETH" {
 		return nil, fmt.Errorf("invalid asset=%s", asset)
 	}
-	rows, err := client.conn.Query(context.Background(), "SELECT tradePrice, timestamp FROM price WHERE asset=$1", asset)
+	rows, err := client.conn.Query(context.Background(),
+		`SELECT tradePrice, timestamp FROM price WHERE asset=$1 ORDER BY timestamp DESC LIMIT $2;`, asset, n)
 	if err != nil {
 		return nil, fmt.Errorf("cannot query prices. err=%s", err)
 	}
-	prices := make([]common.Price, 0)
+	prices := make([]common.Price, 0, n)
 	defer rows.Close()
 	for rows.Next() {
 		price := common.Price{}

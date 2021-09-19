@@ -18,13 +18,13 @@ func TestViewDb(t *testing.T) {
 
 	dbClient := NewCockroachDbClient(config)
 	t.Run("viewPosts", func(t *testing.T) {
-		posts, err := dbClient.GetPosts(1)
+		posts, err := dbClient.GetPosts(100)
 		fmt.Println(posts)
 		assert.NoError(t, err)
 	})
 
 	t.Run("viewPrices", func(t *testing.T) {
-		prices, err := dbClient.GetPrices("ETH")
+		prices, err := dbClient.GetPrices("ETH", 100)
 		fmt.Println(prices)
 		assert.NoError(t, err)
 	})
