@@ -1,11 +1,14 @@
-import React from "react";
-import styled from "styled-components";
+import React, { useEffect, useState } from 'react';
+import styled from 'styled-components';
 
-import Graph from "../components/Graph";
-import Heading from "../components/Heading";
-import TweetInput from "../components/TweetInput";
-import Tweets from "../components/Tweets";
-import { initWebsockets } from "./websockets";
+import Graph from '../components/Graph';
+import Heading from '../components/Heading';
+import TweetInput from '../components/TweetInput';
+import Tweets from '../components/Tweets';
+
+import { Tweet } from '../types';
+
+import pusher from '../utils/pusher';
 
 const Sidebar = styled.div`
   width: 100%;
@@ -35,15 +38,69 @@ const Price = styled.div`
   color: #474b52;
 `;
 
+const mockData: any = [
+  {
+    name: "a",
+    msg: "An essential piece of #Ethereum’s Serenity upgrade, the Beacon Chain’s deposit contract, is live. This begins a transition to #Eth2.",
+    timestamp: "12:00"
+  },
+  {
+    name: "b",
+    msg: "More than 1000 hackers from around the world are staked and beginning to hack today at ETHOnline!",
+    timestamp: "12:00"
+  },
+  {
+    name: "c",
+    msg: "We're days away from #ETHOnline—the biggest Ethereum event of the year! It's a hackathon with multiple single-day conferences on NFTs, DAOs, and The Merge.",
+    timestamp: "12:00"
+  },
+  {
+    name: "d",
+    msg: "We're pleased to announce we've chosen SpruceID to lead the effort to standardize Sign-in with Ethereum!",
+    timestamp: "12:00"
+  }
+];
+
 const HomePage: React.FC = () => {
-  initWebsockets();
+  const [tweets, setTweets] = useState([]);
+
+  useEffect(() => {
+    const getTweets = () => {
+      setTweets(mockData);
+    };
+
+    const onTweetReceived = (tweet: Tweet) => {
+      setTweets((prevTweets: Tweet[]): any => {
+        return [...prevTweets, tweet];
+      });
+    };
+
+    const setupPusher = () => {
+      const channel = pusher().subscribe("tweets");
+      channel.bind('newTweet', onTweetReceived);
+    };
+
+    getTweets();
+    setupPusher();
+
+    return (): void => {
+      pusher().unbind('newTweet', onTweetReceived);
+    };
+  }, []);
+
+  const submitTweet = async () => {
+    
+  };
+
   return (
     <GridContainer>
       <Sidebar>
-        <Heading>Activity</Heading>
-        <TweetInput />
-        <Line />
-        <Tweets />
+        <Heading>
+          Activity
+        </Heading>
+        <TweetInput onSubmit={submitTweet}/>
+        <Line/>
+        <Tweets tweets={tweets}/>
       </Sidebar>
       <Content>
         <Heading>Ethereum</Heading>
