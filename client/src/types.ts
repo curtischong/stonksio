@@ -11,3 +11,14 @@ export interface ServerTweet {
   Body: string;
   Timestamp: string;
 }
+
+export interface Price {
+  y: number;
+  x: string;
+}
+
+export interface ServerPrice {
+  Asset: string;
+  TradePrice: string;
+  Timestamp: string;
+}
