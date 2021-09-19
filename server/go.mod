@@ -8,7 +8,6 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/googleapis/gax-go/v2 v2.1.1 // indirect
 	github.com/jackc/pgx/v4 v4.13.0
-	github.com/konsorten/go-windows-terminal-sequences v1.0.3 // indirect
 	github.com/lib/pq v1.10.3 // indirect
 	github.com/n0madic/twitter-scraper v0.0.0-20210913143630-43a6fa96a592
 	github.com/pusher/pusher-http-go v4.0.1+incompatible

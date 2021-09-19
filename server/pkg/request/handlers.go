@@ -16,10 +16,11 @@ type RequestHandler struct {
 
 func NewRequestHandler(
 	config *config.Config,
+	cockroachDbClient *database.CockroachDbClient,
 ) *RequestHandler {
 	return &RequestHandler{
 		config:            config,
-		cockroachDbClient: database.NewCockroachDbClient(config),
+		cockroachDbClient: cockroachDbClient,
 		PusherClient:      websocket.NewPusherClient(),
 	}
 }

@@ -19,7 +19,7 @@ const (
 
 type PriceGenerator struct {
 	cockroachDbClient *database.CockroachDbClient
-	gcpClient         sentiment.GcpClient
+	gcpClient         *sentiment.GcpClient
 	out               chan<- *common.Price
 	logger            *log.Logger
 	asset             string
@@ -31,7 +31,7 @@ type PriceGenerator struct {
 
 func NewPriceGenerator(
 	cockroachDbClient *database.CockroachDbClient,
-	gcpClient sentiment.GcpClient,
+	gcpClient *sentiment.GcpClient,
 	postChannel chan<- *common.Price,
 	asset string,
 ) *PriceGenerator {
