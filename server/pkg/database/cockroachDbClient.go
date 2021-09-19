@@ -27,7 +27,7 @@ func NewCockroachDbClient(
 		log.Fatal("error configuring the database: ", err)
 	}
 
-	connConfig.Database = "stonksio"
+	connConfig.Database = "defaultdb"
 	conn, err := pgx.ConnectConfig(context.Background(), connConfig)
 	if err != nil {
 		log.Fatal("error connecting to the database: ", err)
@@ -63,7 +63,7 @@ func (client *CockroachDbClient) deleteAllPosts() error {
 }
 
 func (client *CockroachDbClient) GetPosts(n int) ([]common.Post, error) {
-	rows, err := client.conn.Query(context.Background(), `SELECT 'id', 'username', 'userpicurl', 'body', 'timestamp' FROM post LIMIT $1;`, n)
+	rows, err := client.conn.Query(context.Background(), `SELECT id, username, userpicurl, body, timestamp FROM post ORDER BY timestamp DESC LIMIT $1;`, n)
 	if err != nil {
 		return nil, fmt.Errorf("cannot query rows. err=%s", err)
 	}

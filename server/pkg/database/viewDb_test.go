@@ -14,15 +14,9 @@ func TestViewDb(t *testing.T) {
 
 	dbClient := NewCockroachDbClient(config)
 	t.Run("viewPosts", func(t *testing.T) {
-		posts, err := dbClient.getPosts(1)
+		posts, err := dbClient.GetPosts(1)
 		fmt.Println(posts)
 		assert.NoError(t, err)
-	})
-
-	t.Run("viewPosts", func(t *testing.T) {
-		posts, err := dbClient.getPosts(1)
-		assert.NoError(t, err)
-		print(posts)
 	})
 }
 
@@ -32,7 +26,7 @@ func TestInsertDb(t *testing.T) {
 
 	dbClient := NewCockroachDbClient(config)
 	t.Run("createPost", func(t *testing.T) {
-		posts, err := dbClient.getPosts(1)
+		posts, err := dbClient.GetPosts(1)
 		fmt.Println(posts)
 		assert.NoError(t, err)
 	})
