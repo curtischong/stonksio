@@ -1,12 +1,11 @@
-import { Tweet, TweetReponse } from '../types';
+import { Tweet, ServerTweet } from '../types';
 import apiClient from './client';
 
-const mapTweetResponse = (resp: TweetReponse): Tweet => {
-  const ts = new Date(resp.Timestamp)
+const mapTweetResponse = (resp: ServerTweet): Tweet => {
   return {
     name: resp.Username,
     msg: resp.Body,
-    timestamp: `${ts.getHours()}:${ts.getMinutes()}`,
+    timestamp: new Date(resp.Timestamp),
   }
 }
 
