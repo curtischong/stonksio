@@ -67,9 +67,11 @@ const Graph: React.FC = () => {
           <VictoryAxis 
             style={{
               axis: {
-                stroke: 'white'
+                stroke: 'white',
               },
               tickLabels: {
+                fontSize: 8,
+                padding: 5,
                 fill: 'white'
               },
             }}
@@ -78,29 +80,16 @@ const Graph: React.FC = () => {
             dependentAxis
             style={{
               axis: {
-                stroke: 'white'
+                stroke: 'white',
               },
               tickLabels: {
+                fontSize: 6,
+                padding: 5,
                 fill: 'white'
               },
             }}
           />
           <VictoryLine
-            labelComponent={
-              <VictoryTooltip
-                  constrainToVisibleArea
-                  cornerRadius={0}
-                  flyoutStyle={{
-                    fill: "transparent",
-                    strokeWidth: 0
-                  }}
-                  pointerLength={0}
-                  style={{
-                    fontSize: 16,
-                    fill: "#ffffff",
-                  }}
-                />
-            }
             style={{
               data: { stroke: "#c43a31" }
             }}
