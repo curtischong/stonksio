@@ -29,7 +29,7 @@ func NewCockroachDbClient(
 		log.Fatal("error configuring the database: ", err)
 	}
 
-	connConfig.Database = "defaultdb"
+	connConfig.Database = "stonkst"
 	conn, err := pgx.ConnectConfig(context.Background(), connConfig)
 	if err != nil {
 		log.Fatal("error connecting to the database: ", err)

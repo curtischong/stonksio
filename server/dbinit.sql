@@ -1,10 +1,10 @@
 SET sql_safe_updates = FALSE;
 
 USE defaultdb;
-DROP DATABASE IF EXISTS stonksio CASCADE;
-CREATE DATABASE IF NOT EXISTS stonksio;
+DROP DATABASE IF EXISTS stonkst CASCADE;
+CREATE DATABASE IF NOT EXISTS stonkst;
 
-USE stonksio;
+USE stonkst;
 
 DROP TABLE IF EXISTS post;
 CREATE TABLE post (
