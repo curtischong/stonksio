@@ -1,4 +1,3 @@
-import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
@@ -8,7 +7,7 @@ import Modal from '../components/Modal';
 import TweetInput from '../components/TweetInput';
 import Tweets from '../components/Tweets';
 
-import { Tweet, TweetReponse } from '../types';
+import { Tweet, ServerTweet } from '../types';
 
 import pusher from '../utils/pusher';
 
@@ -44,29 +43,34 @@ const HomePage: React.FC = () => {
   const [tweets, setTweets] = useState([]);
   const [username, setUsername] = useState('');
 
-  const mapTweetResponse = (resp: TweetReponse): Tweet => {
-    const ts = new Date(resp.Timestamp)
+  const mapFromTweetResponse = (resp: ServerTweet): Tweet => {
     return {
       name: resp.Username,
       msg: resp.Body,
-      timestamp: `${ts.getHours()}:${ts.getMinutes()}`,
-    }
+      timestamp: new Date(resp.Timestamp),
+    };
+  }
+
+  const mapToTweetRequest = (tweet: Tweet): ServerTweet => {
+    return {
+      Username: tweet.name,
+      Body: tweet.msg,
+      Timestamp: tweet.timestamp.toISOString(),
+    };
   }
 
   useEffect(() => {
     const getTweets = () => {
-      axios.get("https://stonk.st/api/posts", {
-        params: {
-          count: 20
-        }
-      }).then(resp => {
-        setTweets(resp.data.map(mapTweetResponse))
-      }).catch(err => console.error(err))
+      fetch("https://stonk.st/api/posts?count=20").then(resp => {
+        return resp.json()
+      }).then(json => {
+        setTweets(json.map(mapFromTweetResponse));
+      }).catch(err => console.error(err));
     };
 
-    const onTweetReceived = (resp: TweetReponse) => {
+    const onTweetReceived = (resp: ServerTweet) => {
       setTweets((prevTweets: Tweet[]): any => {
-        return [...prevTweets, mapTweetResponse(resp)];
+        return [mapFromTweetResponse(resp), ...prevTweets, mapFromTweetResponse(resp)];
       });
     };
 
@@ -87,11 +91,18 @@ const HomePage: React.FC = () => {
     const newTweet: Tweet = {
       name: username,
       msg: message,
-      timestamp: Date.now().toString()
+      timestamp: new Date()
     }
-    setTweets((prevTweets: Tweet[]): any => {
-      return [newTweet, ...prevTweets];
-    });
+    fetch(
+      "https://stonk.st/api/post",
+      {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        mode: "no-cors",
+        body: JSON.stringify(mapToTweetRequest(newTweet))
+      }).then(resp => {}).catch(err => console.error(err));
   };
 
   const onClose = (newUsername: string) => {

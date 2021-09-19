@@ -18,8 +18,8 @@ interface TweetsProps {
 }
 
 const Tweets: React.FC<TweetsProps> = ({ tweets }) => {
-  const tweetMarkdown = tweets.map(({ name, msg, timestamp }, idx) =>
-    <Tweet key={idx} name={name} msg={msg} timestamp={timestamp} />);
+  const tweetMarkdown = tweets.map(({ name, msg, timestamp: ts }, idx) =>
+    <Tweet key={idx} name={name} msg={msg} timestamp={`${ts.getHours()}:${ts.getMinutes()}`} />);
 
   return (
     <TweetsContainer>

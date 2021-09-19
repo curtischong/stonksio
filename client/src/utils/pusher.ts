@@ -12,7 +12,7 @@ const pusher = (): Pusher => {
     }
     return pusherInstance;
   }
-  pusherInstance = new Pusher('8dbf2e2ddc742f692e39', {
+  pusherInstance = new Pusher('f710317ee72763936d91', {
     cluster: 'us2'
   });
   return pusherInstance;
