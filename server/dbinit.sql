@@ -19,6 +19,6 @@ DROP TABLE IF EXISTS price;
 CREATE TABLE price (
   id UUID PRIMARY KEY,
   asset TEXT,
-  price DECIMAL,
+  tradeprice DECIMAL,
   timestamp TIMESTAMP
 );

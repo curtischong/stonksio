@@ -64,6 +64,14 @@ func (client *CockroachDbClient) deleteAllPosts() error {
 	})
 }
 
+func (client *CockroachDbClient) deleteAllPrices() error {
+	return crdbpgx.ExecuteTx(context.Background(), client.conn, pgx.TxOptions{}, func(tx pgx.Tx) error {
+		log.Printf("Deleting all prices")
+		_, err := tx.Exec(context.Background(), "DELETE FROM price")
+		return err
+	})
+}
+
 func (client *CockroachDbClient) GetPosts(n int) ([]common.Post, error) {
 	rows, err := client.conn.Query(context.Background(), `SELECT id, username, userpicurl, body, timestamp FROM post ORDER BY timestamp DESC LIMIT $1;`, n)
 	if err != nil {
@@ -73,13 +81,8 @@ func (client *CockroachDbClient) GetPosts(n int) ([]common.Post, error) {
 	defer rows.Close()
 	for rows.Next() {
 		post := common.Post{}
-		var timestamp string
-		if err := rows.Scan(&post.Id, &post.Username, &post.UserPicUrl, &post.Body, &timestamp); err != nil {
+		if err := rows.Scan(&post.Id, &post.Username, &post.UserPicUrl, &post.Body, &post.Timestamp); err != nil {
 			return nil, fmt.Errorf("cannot scan rows. err=%s", err)
-		}
-		post.Timestamp, err = time.Parse(time.RFC3339, timestamp)
-		if err != nil {
-			return nil, fmt.Errorf("cannot parse post.Timestamp=%s, err=%s", timestamp, err)
 		}
 		posts = append(posts, post)
 	}
@@ -94,20 +97,17 @@ func (client *CockroachDbClient) GetPrices(
 	}
 	rows, err := client.conn.Query(context.Background(), "SELECT tradePrice, timestamp FROM price WHERE asset=$1", asset)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("cannot query prices. err=%s", err)
 	}
 	prices := make([]common.Price, 0)
 	defer rows.Close()
 	for rows.Next() {
 		price := common.Price{}
-		var timestamp string
-		if err := rows.Scan(&price.TradePrice, &timestamp); err != nil {
+		var tradePrice float32
+		if err := rows.Scan(&tradePrice, &price.Timestamp); err != nil {
 			return nil, err
 		}
-		price.Timestamp, err = time.Parse(time.RFC3339, timestamp)
-		if err != nil {
-			return nil, fmt.Errorf("cannot parse price.Timestamp=%s, err=%s", timestamp, err)
-		}
+		price.TradePrice = tradePrice
 		prices = append(prices, price)
 	}
 	return prices, nil
@@ -141,8 +141,8 @@ func (client *CockroachDbClient) InsertPrice(
 	return crdbpgx.ExecuteTx(context.Background(), client.conn, pgx.TxOptions{}, func(tx pgx.Tx) error {
 		log.Printf("Creating tradePrice=%f for asset=%s\n", tradePrice, asset)
 		_, err := tx.Exec(context.Background(),
-			"INSERT INTO tradePrice (asset, tradePrice, timestamp) VALUES ($1, $2, $3)",
-			asset, tradePrice, time.Now())
+			"INSERT INTO price (id, asset, tradePrice, timestamp) VALUES ($1, $2, $3, $4)",
+			uuid.New().String(), asset, tradePrice, time.Now())
 		return err
 	})
 }

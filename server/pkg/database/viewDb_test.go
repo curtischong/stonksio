@@ -22,6 +22,12 @@ func TestViewDb(t *testing.T) {
 		fmt.Println(posts)
 		assert.NoError(t, err)
 	})
+
+	t.Run("viewPrices", func(t *testing.T) {
+		prices, err := dbClient.GetPrices("ETH")
+		fmt.Println(prices)
+		assert.NoError(t, err)
+	})
 }
 
 func TestInsertDb(t *testing.T) {
@@ -39,16 +45,24 @@ func TestInsertDb(t *testing.T) {
 		})
 		assert.NoError(t, err)
 	})
+
+	t.Run("insertPrice", func(t *testing.T) {
+		err := dbClient.InsertPrice("ETH", 2311.3)
+		assert.NoError(t, err)
+	})
 }
 
 func TestDeleteDb(t *testing.T) {
-	_, err := config.NewConfig("../../config.yaml")
+	config, err := config.NewConfig("../../config.yaml")
 	assert.NoError(t, err)
 
-	//dbClient := NewCockroachDbClient(config)
-	/*t.Run("deletePost", func(t *testing.T) {
-		posts, err := dbClient.delete(1)
-		fmt.Println(posts)
+	dbClient := NewCockroachDbClient(config)
+	t.Run("deleteAllPosts", func(t *testing.T) {
+		err := dbClient.deleteAllPosts()
 		assert.NoError(t, err)
-	})*/
+	})
+	t.Run("deleteAllPrices", func(t *testing.T) {
+		err := dbClient.deleteAllPrices()
+		assert.NoError(t, err)
+	})
 }
