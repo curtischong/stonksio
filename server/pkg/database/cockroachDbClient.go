@@ -68,7 +68,7 @@ func (client *CockroachDbClient) GetPrices(
 	if asset != "ETH" {
 		return nil, fmt.Errorf("invalid asset=%s", asset)
 	}
-	rows, err := client.conn.Query(context.Background(), "SELECT price, time FROM price WHERE asset=$1", asset)
+	rows, err := client.conn.Query(context.Background(), "SELECT tradePrice, timestamp FROM price WHERE asset=$1", asset)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func (client *CockroachDbClient) GetPrices(
 	for rows.Next() {
 		price := common.Price{}
 		var timestamp string
-		if err := rows.Scan(&price.Price); err != nil {
+		if err := rows.Scan(&price.TradePrice); err != nil {
 			return nil, err
 		}
 		price.Timestamp, err = time.Parse(time.RFC3339, timestamp)
@@ -97,7 +97,7 @@ func (client *CockroachDbClient) GetLatestOhlc(
 	}
 
 	rows, err := client.conn.Query(context.Background(),
-		"SELECT open, high, low, close, startTime, endTime FROM ohlc WHERE endTime = MAX(endTime)")
+		"SELECT tradePrice FROM price WHERE timestamp = MAX(timestamp)")
 	if err != nil {
 		return 0, err
 	}
@@ -118,7 +118,7 @@ func (client *CockroachDbClient) insertPrice(
 		log.Printf("Creating price=%s for asset=%s\n", price, asset)
 		_, err := tx.Exec(context.Background(),
 			"INSERT INTO price (asset, price, timestamp) VALUES ($1, $2, $3)",
-			asset, price.Price, price.Timestamp)
+			asset, price.TradePrice, price.Timestamp)
 		return err
 	})
 }

@@ -1,4 +1,4 @@
-package ohlc
+package price
 
 import (
 	"stonksio/pkg/common"
@@ -10,31 +10,31 @@ import (
 
 const defaultLastPrice = 3000.0
 
-type OhlcGenerator struct {
+type PriceGenerator struct {
 	cockroachDbClient *database.CockroachDbClient
 	gcpClient         sentiment.GcpClient
 	lastPrice         float32
 }
 
-func NewOhlcGenerator(
+func NewPriceGenerator(
 	cockroachDbClient *database.CockroachDbClient,
 	gcpClient sentiment.GcpClient,
 	asset string,
-) *OhlcGenerator {
+) *PriceGenerator {
 	lastPrice, err := cockroachDbClient.GetLatestOhlc(asset)
 	if err != nil {
 		log.Errorf("couldn't find last price. err=%s", err)
 		lastPrice = defaultLastPrice
 	}
 
-	return &OhlcGenerator{
+	return &PriceGenerator{
 		cockroachDbClient: cockroachDbClient,
 		gcpClient:         gcpClient,
 		lastPrice:         lastPrice,
 	}
 }
 
-func (generator *OhlcGenerator) writeNewPrice(
+func (generator *PriceGenerator) writeNewPrice(
 	post common.Post,
 ) error {
 	_, err := generator.gcpClient.CalculateSentiment(post.Body)
