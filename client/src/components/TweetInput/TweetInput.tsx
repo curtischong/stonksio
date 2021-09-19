@@ -43,7 +43,7 @@ const TweetInput: React.FC<TweetInputProps> = ({ onSubmit }) => {
 
   const handleSubmit = (event: any) => {
     event.preventDefault();
-    onSubmit();
+    onSubmit(value);
     setValue('');
   }
 

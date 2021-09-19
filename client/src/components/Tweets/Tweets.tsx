@@ -9,6 +9,8 @@ const TweetsContainer = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
+  overflow-y: auto;
+  height: 640px;
 `;
 
 interface TweetsProps {

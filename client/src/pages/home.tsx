@@ -88,8 +88,15 @@ const HomePage: React.FC = () => {
     };
   }, []);
 
-  const submitTweet = async () => {
-    
+  const submitTweet = (message: string) => {
+    const newTweet: Tweet = {
+      name: 'Daniel',
+      msg: message,
+      timestamp: Date.now().toString()
+    }
+    setTweets((prevTweets: Tweet[]): any => {
+      return [newTweet, ...prevTweets];
+    });
   };
 
   return (
