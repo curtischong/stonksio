@@ -50,6 +50,8 @@ func (m *OHLCManager) init() {
 }
 
 func (m *OHLCManager) HandlePrice(price *common.Price) {
+	return // no-op
+
 	m.lock.Lock()
 	defer m.lock.Unlock()
 	ohlc := m.ohlcs.Front().Value.(*common.OHLC)
