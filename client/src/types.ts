@@ -22,3 +22,7 @@ export interface ServerPrice {
   TradePrice: string;
   Timestamp: string;
 }
+
+export interface Balance {
+  string: string; // asset -> balance
+}

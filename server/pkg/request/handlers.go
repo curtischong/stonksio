@@ -120,11 +120,11 @@ func (handler *RequestHandler) HandleGetWallet(
 		handler.sendInternalServerError(w, err)
 		return
 	}
-	walletData := make(map[string]string)
-	walletData["ETH"] = fmt.Sprintf("%f", ethWallet.Balance)
-	walletData["USD"] = fmt.Sprintf("%f", usdWallet.Balance)
-	fileUrlsBytes, _ := json.Marshal(walletData)
-	w.Write(fileUrlsBytes)
+	walletData := make(map[string]float32)
+	walletData["ETH"] = ethWallet.Balance
+	walletData["USD"] = usdWallet.Balance
+	walletRes, _ := json.Marshal(walletData)
+	w.Write(walletRes)
 }
 
 func (handler *RequestHandler) HandleBuy(
