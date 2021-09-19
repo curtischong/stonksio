@@ -1,7 +1,6 @@
 package conductor
 
 import (
-	"fmt"
 	log "github.com/sirupsen/logrus"
 	"stonksio/pkg/common"
 	"stonksio/pkg/config"
@@ -52,7 +51,6 @@ func (c *Conductor) consumer() {
 			c.postHandler.HandlePost(post)
 
 		case price := <-c.incomingPrices:
-			fmt.Println(price)
 			if err := c.cockroachDbClient.InsertPrice("ETH", price.TradePrice); err != nil {
 				log.Errorf("cannot insert price err=%s", err)
 			}

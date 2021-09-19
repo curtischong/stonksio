@@ -48,7 +48,7 @@ func (client *CockroachDbClient) InsertPost(
 	post common.Post,
 ) error {
 	return crdbpgx.ExecuteTx(context.Background(), client.db, pgx.TxOptions{}, func(tx pgx.Tx) error {
-		log.Printf("Creating post=%s\n", post)
+		//log.Printf("Creating post=%s\n", post)
 		_, err := tx.Exec(context.Background(),
 			`INSERT INTO post (id, username, "userpicurl", "body", "timestamp") VALUES ($1, $2, $3, $4, $5)`,
 			uuid.New().String(), post.Username, post.UserPicUrl, post.Body, post.Timestamp)
@@ -141,7 +141,7 @@ func (client *CockroachDbClient) InsertPrice(
 		return fmt.Errorf("invalid asset=%s", asset)
 	}
 	return crdbpgx.ExecuteTx(context.Background(), client.db, pgx.TxOptions{}, func(tx pgx.Tx) error {
-		log.Printf("Creating tradePrice=%f for asset=%s\n", tradePrice, asset)
+		//log.Printf("Creating tradePrice=%f for asset=%s\n", tradePrice, asset)
 		_, err := tx.Exec(context.Background(),
 			"INSERT INTO price (id, asset, tradePrice, timestamp) VALUES ($1, $2, $3, $4)",
 			uuid.New().String(), asset, tradePrice, time.Now())
