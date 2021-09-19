@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"stonksio/pkg/common"
+	"stonksio/pkg/feed"
 	"stonksio/pkg/request"
 	"time"
 
@@ -18,6 +19,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("couldn't load config path=%s, err=%s", configPath, err)
 	}
+
+	_ = feed.NewFeed(config.Feed, nil)
 
 	requestHandler := request.NewRequestHandler(config)
 

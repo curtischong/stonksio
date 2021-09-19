@@ -15,9 +15,14 @@ type DatasetConfig struct {
 	TweetFiles  []string `yaml:"tweetFiles"`
 }
 
+type FeedConfig struct {
+	AverageTime int `yaml:"averageTime"`
+}
+
 type Config struct {
 	DatabaseConfig DatabaseConfig `yaml:"database"`
 	DatasetConfig  DatasetConfig  `yaml:"dataset"`
+	Feed           FeedConfig     `yaml:"feed"`
 }
 
 func NewConfig(

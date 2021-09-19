@@ -6,9 +6,9 @@ require (
 	cloud.google.com/go/language v0.1.0
 	github.com/cockroachdb/cockroach-go/v2 v2.1.1
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
-	github.com/google/uuid v1.3.0
 	github.com/googleapis/gax-go/v2 v2.1.1 // indirect
 	github.com/jackc/pgx/v4 v4.13.0
+	github.com/n0madic/twitter-scraper v0.0.0-20210913143630-43a6fa96a592
 	github.com/pusher/pusher-http-go v4.0.1+incompatible
 	github.com/sirupsen/logrus v1.4.2
 	golang.org/x/net v0.0.0-20210917221730-978cfadd31cf // indirect
