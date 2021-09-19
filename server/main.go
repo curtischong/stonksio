@@ -25,7 +25,7 @@ func main() {
 	requestHandler := request.NewRequestHandler(config)
 
 	sendTestPush(requestHandler)
-	http.HandleFunc("/get/prices/eth", requestHandler.HandleGetPrices)
+	http.HandleFunc("/api/prices/eth", requestHandler.HandleGetPrices)
 	log.Info("Starting server on port 8090")
 	err = http.ListenAndServe(":8090", nil)
 	if err != nil {
