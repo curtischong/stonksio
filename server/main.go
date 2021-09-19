@@ -7,6 +7,7 @@ import (
 	"stonksio/pkg/database"
 	"stonksio/pkg/feed"
 	"stonksio/pkg/generator/price"
+	"stonksio/pkg/ohlc"
 	"stonksio/pkg/post"
 	"stonksio/pkg/request"
 	"stonksio/pkg/sentiment"
@@ -37,9 +38,11 @@ func main() {
 	incomingPosts := make(chan *common.Post)
 	feedSrv := feed.NewFeed(config.Feed, incomingPosts)
 
+	ohlcManager := ohlc.NewOHLCManager(cockroachDbClient, pusherClient)
+
 	conductorSrv := conductor.NewConductor(cockroachDbClient, postHandler, pusherClient, incomingPosts, incomingPrices)
 
-	requestHandler := request.NewRequestHandler(config, cockroachDbClient, postHandler)
+	requestHandler := request.NewRequestHandler(config, cockroachDbClient, postHandler, ohlcManager)
 
 	http.HandleFunc("/api/post", requestHandler.HandlePostPost)
 	http.HandleFunc("/api/posts", requestHandler.HandleGetPosts)

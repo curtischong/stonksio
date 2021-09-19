@@ -8,6 +8,7 @@ import (
 	"stonksio/pkg/common"
 	"stonksio/pkg/config"
 	"stonksio/pkg/database"
+	"stonksio/pkg/ohlc"
 	"stonksio/pkg/post"
 	"strconv"
 	"time"
@@ -27,18 +28,21 @@ type RequestHandler struct {
 	config            *config.Config
 	cockroachDbClient *database.CockroachDbClient
 	postHandler       *post.PostHandler
+	ohlcManager       *ohlc.OHLCManager
 }
 
 func NewRequestHandler(
 	config *config.Config,
 	cockroachDbClient *database.CockroachDbClient,
 	postHandler *post.PostHandler,
+	ohlcManager *ohlc.OHLCManager,
 ) *RequestHandler {
 	return &RequestHandler{
 		logger:            log.New(),
 		config:            config,
 		cockroachDbClient: cockroachDbClient,
 		postHandler:       postHandler,
+		ohlcManager:       ohlcManager,
 	}
 }
 
@@ -182,23 +186,8 @@ func (handler *RequestHandler) HandleBuy(
 func (handler *RequestHandler) HandleGetOHLCs(
 	w http.ResponseWriter, r *http.Request,
 ) {
-	count, err := getCount(r, defaultPostsCount)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{
-			"status":  "error",
-			"message": "could not parse count",
-		})
-		return
-	}
-
-	ohlcs, err := handler.cockroachDbClient.GetOHLCs(count)
-	if err != nil {
-		handler.sendInternalServerError(w, err)
-		return
-	}
 	handler.sendStatusOK(w)
-	json.NewEncoder(w).Encode(ohlcs)
+	json.NewEncoder(w).Encode(handler.ohlcManager.GetOHLCs())
 }
 
 func (handler *RequestHandler) HandlePostPost(

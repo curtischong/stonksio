@@ -49,7 +49,7 @@ func (m *OHLCManager) init() {
 	}
 }
 
-func (m *OHLCManager) handlePrice(price *common.Price) {
+func (m *OHLCManager) HandlePrice(price *common.Price) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 	ohlc := m.ohlcs.Front().Value.(*common.OHLC)
@@ -80,7 +80,7 @@ func (m *OHLCManager) handlePrice(price *common.Price) {
 	m.pusherClient.PushOHLC(ohlc)
 }
 
-func (m *OHLCManager) getOHLCs() []common.OHLC {
+func (m *OHLCManager) GetOHLCs() []common.OHLC {
 	m.lock.RLock()
 	defer m.lock.RUnlock()
 	ohlcs := make([]common.OHLC, 0, m.ohlcs.Len())
