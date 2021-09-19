@@ -14,7 +14,7 @@ export interface ServerTweet {
 
 export interface Price {
   y: number;
-  x: string;
+  x: Date;
 }
 
 export interface ServerPrice {

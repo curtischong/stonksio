@@ -33,12 +33,6 @@ const Line = styled.div`
   margin: 16px 0;
 `;
 
-const Price = styled.div`
-  font-size: 16px;
-  font-weight: 600;
-  color: #474b52;
-`;
-
 const HomePage: React.FC = () => {
   const [tweets, setTweets] = useState([]);
   const [username, setUsername] = useState('');
@@ -70,7 +64,7 @@ const HomePage: React.FC = () => {
 
     const onTweetReceived = (resp: ServerTweet) => {
       setTweets((prevTweets: Tweet[]): any => {
-        return [mapFromTweetResponse(resp), ...prevTweets, mapFromTweetResponse(resp)];
+        return [mapFromTweetResponse(resp), ...prevTweets];
       });
     };
 
@@ -123,7 +117,6 @@ const HomePage: React.FC = () => {
         </Sidebar>
         <Content>
           <Heading>Ethereum</Heading>
-          <Price>US$1234.41</Price>
           <Graph />
         </Content>
       </GridContainer>
