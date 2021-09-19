@@ -3,10 +3,11 @@ package database
 import (
 	"context"
 	"fmt"
-	"github.com/jackc/pgx/v4"
 	"log"
 	"stonksio/pkg/common"
 	"stonksio/pkg/config"
+
+	"github.com/jackc/pgx/v4"
 
 	"github.com/google/uuid"
 
@@ -129,8 +130,13 @@ func (client *CockroachDbClient) GetLatestPrice(
 		return 0, err
 	}
 
+	return 0, nil
 	for rows.Next() {
-		break
+		var tradePrice float32
+		if err := rows.Scan(&tradePrice); err != nil {
+			return 0, err
+		}
+		//return tradePrice, nil
 	}
 	return 0, nil
 }

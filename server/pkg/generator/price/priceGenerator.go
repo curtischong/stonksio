@@ -12,9 +12,9 @@ import (
 )
 
 const (
-	defaultAvgTime     = 4 // on avg, generate a new price every x seconds
-	defaultLastPrice   = 3000.0
-	stdDevForRandPrice = 3.0
+	defaultAvgTime       = 1 // on avg, generate a new price every x seconds
+	defaultStartingPrice = 3000.0
+	stdDevForRandPrice   = 3.0
 )
 
 type PriceGenerator struct {
@@ -26,6 +26,7 @@ type PriceGenerator struct {
 	lastPrice         float32
 	globalSentiment   float32
 	minuteSentiment   float32
+	globalMomentum    float32
 	averageTime       int
 }
 
@@ -38,7 +39,7 @@ func NewPriceGenerator(
 	lastPrice, err := cockroachDbClient.GetLatestPrice(asset)
 	if err != nil {
 		log.Errorf("couldn't find last price. err=%s", err)
-		lastPrice = defaultLastPrice
+		lastPrice = defaultStartingPrice
 	}
 
 	return &PriceGenerator{
@@ -49,6 +50,7 @@ func NewPriceGenerator(
 		asset:             asset,
 		logger:            log.New(),
 		averageTime:       defaultAvgTime,
+		globalMomentum:    0,
 	}
 }
 
@@ -68,14 +70,8 @@ func (g *PriceGenerator) generatePrices() {
 		delay := time.Duration(rand.Intn(g.averageTime)) * time.Second
 		time.Sleep(delay)
 
-		g.out <- g.getNewRandomPrice()
+		g.out <- g.getNewPrice()
 	}
-}
-
-func (g *PriceGenerator) getNewRandomPrice() *common.Price {
-	price := g.getNewPrice()
-	price.TradePrice += float32(rand.NormFloat64() * stdDevForRandPrice)
-	return price
 }
 
 func (g *PriceGenerator) GetNewPriceFromPostSentiment(
@@ -93,9 +89,21 @@ func (g *PriceGenerator) GetNewPriceFromPostSentiment(
 }
 
 func (g *PriceGenerator) getNewPrice() *common.Price {
+	sentimentPrice := g.globalSentiment*5 + g.minuteSentiment*5
+	// this is to bring is back to the default starting price
+	// we are using bang-bang control to over-compensate
+	g.globalMomentum += defaultStartingPrice - g.lastPrice
+	momentumPrice := g.globalMomentum*0.05 + float32(rand.NormFloat64()*6)
+
+	noise := float32(rand.NormFloat64() * stdDevForRandPrice)
+	newPrice := sentimentPrice + momentumPrice + noise
+	// the exponential function is always positive. By feeding it -newPrice we will trend up more the closer past 0 the price is
+	newPrice = float32(math.Max(0, float64(newPrice)+3*math.Exp(float64(-newPrice)))) // bound the newPrice so it can't be lower than 0
+	log.Infof("globalSentiment: %f, globalMomentum: %f, price: %f", g.globalSentiment, g.globalMomentum, newPrice)
+	g.lastPrice = newPrice
 	return &common.Price{
 		Asset:      g.asset,
-		TradePrice: g.lastPrice + g.globalSentiment*0.1 + g.minuteSentiment*0.1,
+		TradePrice: newPrice,
 		Timestamp:  time.Now(),
 	}
 }
