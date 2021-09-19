@@ -3,6 +3,7 @@ import styled from 'styled-components';
 
 import Graph from '../components/Graph';
 import Heading from '../components/Heading';
+import Modal from '../components/Modal';
 import TweetInput from '../components/TweetInput';
 import Tweets from '../components/Tweets';
 
@@ -63,6 +64,7 @@ const mockData: any = [
 
 const HomePage: React.FC = () => {
   const [tweets, setTweets] = useState([]);
+  const [username, setUsername] = useState('');
 
   useEffect(() => {
     const getTweets = () => {
@@ -90,7 +92,7 @@ const HomePage: React.FC = () => {
 
   const submitTweet = (message: string) => {
     const newTweet: Tweet = {
-      name: 'Daniel',
+      name: username,
       msg: message,
       timestamp: Date.now().toString()
     }
@@ -99,22 +101,29 @@ const HomePage: React.FC = () => {
     });
   };
 
+  const onClose = (newUsername: string) => {
+    setUsername(newUsername);
+  };
+
   return (
-    <GridContainer>
-      <Sidebar>
-        <Heading>
-          Activity
-        </Heading>
-        <TweetInput onSubmit={submitTweet}/>
-        <Line/>
-        <Tweets tweets={tweets}/>
-      </Sidebar>
-      <Content>
-        <Heading>Ethereum</Heading>
-        <Price>US$1234.41</Price>
-        <Graph />
-      </Content>
-    </GridContainer>
+    <>
+      {username === '' && <Modal onClose={onClose}/>}
+      <GridContainer>
+        <Sidebar>
+          <Heading>
+            Activity
+          </Heading>
+          <TweetInput onSubmit={submitTweet}/>
+          <Line/>
+          <Tweets tweets={tweets}/>
+        </Sidebar>
+        <Content>
+          <Heading>Ethereum</Heading>
+          <Price>US$1234.41</Price>
+          <Graph />
+        </Content>
+      </GridContainer>
+    </>
   );
 };
 
